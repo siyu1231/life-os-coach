@@ -1,0 +1,15 @@
+_reference/
+
+# 用户数据目录
+life-coach-data/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
