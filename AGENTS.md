@@ -166,17 +166,17 @@
 | 教练流程底层方法论 | `coach/coaching-process.md` | 用户需要被陪伴、澄清、整理、推进时（非简单问答） |
 | 情绪与行动障碍处理 | `coach/act-core.md` | 用户出现自我评判、情绪淹没、回避、价值冲突或「想清楚但行动不了」时 |
 
-#### 七大教练技能（来自 `_reference/life-coach/skills/`）
+#### 七大教练技能（来自 `coach/skills/`）
 
 | 用户需求 | 路由到 skill | 主要文件 |
 |---------|-------------|---------|
-| 意义感、价值观、人生方向、身份、长期主题 | `life-vision` | `_reference/life-coach/skills/life-vision/SKILL.md` |
-| 拖延、逃避、阻抗、卡住、开始困难 | `procrastination-execution` | `_reference/life-coach/skills/procrastination-execution/SKILL.md` |
-| 制定计划、安排周/日/月/项目、排序任务 | `planning` | `_reference/life-coach/skills/planning/SKILL.md` |
-| 周复盘、项目复盘、行动后反思、经验提炼 | `review` | `_reference/life-coach/skills/review/SKILL.md` |
-| 建立、调整、恢复或替换习惯 | `habit-design` | `_reference/life-coach/skills/habit-design/SKILL.md` |
-| 低精力、耗竭风险、恢复、睡眠节律、容量感知计划 | `energy-management` | `_reference/life-coach/skills/energy-management/SKILL.md` |
-| 混乱、高风险、多因素、难以直接建议的问题 | `complex-problem-solving` | `_reference/life-coach/skills/complex-problem-solving/SKILL.md` |
+| 意义感、价值观、人生方向、身份、长期主题 | `life-vision` | `coach/skills/life-vision/SKILL.md` |
+| 拖延、逃避、阻抗、卡住、开始困难 | `procrastination-execution` | `coach/skills/procrastination-execution/SKILL.md` |
+| 制定计划、安排周/日/月/项目、排序任务 | `planning` | `coach/skills/planning/SKILL.md` |
+| 周复盘、项目复盘、行动后反思、经验提炼 | `review` | `coach/skills/review/SKILL.md` |
+| 建立、调整、恢复或替换习惯 | `habit-design` | `coach/skills/habit-design/SKILL.md` |
+| 低精力、耗竭风险、恢复、睡眠节律、容量感知计划 | `energy-management` | `coach/skills/energy-management/SKILL.md` |
+| 混乱、高风险、多因素、难以直接建议的问题 | `complex-problem-solving` | `coach/skills/complex-problem-solving/SKILL.md` |
 
 #### 技能优先级
 
@@ -386,20 +386,20 @@ life-os-coach/
 │   ├── isa-system.md                  #   可验证完成标准定义
 │   ├── telos-system.md                #   人生方向管理系统
 │   └── verification.md                #   三级验证系统
-├── coach/                             # 第三层（共享基础）：教练方法论
+├── coach/                             # 第三层：教练方法论与七大技能
 │   ├── coaching-process.md            #   共享教练七步流程
-│   └── act-core.md                    #   ACT 底层操作参考
+│   ├── act-core.md                    #   ACT 底层操作参考
+│   └── skills/                        #   七大教练技能（含 mail-trigger 增强）
+│       ├── life-vision/               #   人生愿景与价值澄清
+│       ├── procrastination-execution/ #   拖延与执行阻力
+│       ├── planning/                  #   计划制定与任务排序
+│       ├── review/                    #   复盘与经验提炼
+│       ├── habit-design/              #   习惯设计与行为养成
+│       ├── energy-management/         #   精力管理与耗竭预防
+│       └── complex-problem-solving/   #   复杂问题拆解与决策
 ├── integrations/                      # 第四层：外部工具接入
 │   ├── tools.md                       #   工具适配层通用规范
 │   └── dida-mcp.md                    #   滴答清单 MCP 集成
-├── _reference/life-coach/skills/      # 第三层（七大技能）：具体教练领域
-│   ├── life-vision/                   #   人生愿景与价值澄清
-│   ├── procrastination-execution/     #   拖延与执行阻力
-│   ├── planning/                      #   计划制定与任务排序
-│   ├── review/                        #   复盘与经验提炼
-│   ├── habit-design/                  #   习惯设计与行为养成
-│   ├── energy-management/             #   精力管理与耗竭预防
-│   └── complex-problem-solving/       #   复杂问题拆解与决策
 ├── templates/                         # 用户数据模板（首次安装时复制到 life-coach-data/）
 │   ├── profile/
 │   ├── planning/
@@ -426,7 +426,7 @@ life-os-coach/
 
 ## Skill 使用
 
-共享教练流程放在 `coach/coaching-process.md`，ACT 底层操作参考放在 `coach/act-core.md`，记忆与记录规则放在 `system/memory-system.md`。详细领域方法放在 `_reference/life-coach/skills/` 下的七个 skill 中。处理具体问题时，先根据四层路由表判断该读哪些文件，再按对应文件的流程执行。
+共享教练流程放在 `coach/coaching-process.md`，ACT 底层操作参考放在 `coach/act-core.md`，记忆与记录规则放在 `system/memory-system.md`。详细领域方法放在 `coach/skills/` 下的七个 skill 中（含 `mail-trigger.md` 邮件触发增强），_reference/life-coach/skills/ 保留原始版本作为引用备份。处理具体问题时，先根据四层路由表判断该读哪些文件，再按对应文件的流程执行。
 
 ---
 
@@ -444,5 +444,6 @@ life-os-coach/
 - `coach/act-core.md`：ACT 底层操作参考。
 - `integrations/tools.md`：工具适配层通用规范。
 - `integrations/dida-mcp.md`：滴答清单 MCP 集成规范。
-- `_reference/life-coach/skills/`：七大教练技能的完整方法论。
+- `coach/skills/`：七大教练技能的完整方法论（含 mail-trigger 邮件触发增强）。
+- `_reference/`：上游开源项目原始副本（life-coach 和 LifeOS），保留版权和原始内容。
 - `templates/`：用户数据模板。
