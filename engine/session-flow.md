@@ -126,16 +126,17 @@ if config.get("cron.enabled") is false:
 | `memory/long-term.md` | 跨文件综合洞察和索引 | 按需读取 |
 | `memory/daily/{today}.md` | 当日已有记录 | 按需读取 |
 | `memory/daily/{yesterday}.md` | 昨日状态和行动 | 按需读取（用于连贯性上下文） |
+| `planning/commitments.md` | 跨天承诺追踪：未来意图、目标日期、前置检查 | 按需读取（检查今日到期的承诺和前置提醒） |
 | 外部日历 API | 今日日程摘要 | 按需读取 |
 | 外部待办 API | 今日待办概览 | 按需读取 |
 | 天气 API | 当日天气 | 仅早安问候节点读取 |
 
 读取策略：
-- **早安问候（09:30）**：读取 `user.md`、`memory/long-term.md`、昨日和今日的 `memory/daily/*.md`、日历、待办、天气。
-- **状态检查（10:30/15:30/16:30）**：读取 `user.md`、今日 `memory/daily/*.md`。
-- **午后启动（14:30）**：读取 `user.md`、今日 `memory/daily/*.md`、日历（下午时段）。
-- **日终收尾（17:30）**：读取 `user.md`、今日 `memory/daily/*.md`。
-- **晚间复盘（22:30）**：读取 `user.md`、今日 `memory/daily/*.md`。
+- **早安问候（09:30）**：读取 `user.md`、`memory/long-term.md`、昨日和今日的 `memory/daily/*.md`、`commitments.md`、日历、待办、天气。
+- **状态检查（10:30/15:30/16:30）**：读取 `user.md`、今日 `memory/daily/*.md`、`commitments.md`（检查当日到期的承诺）。
+- **午后启动（14:30）**：读取 `user.md`、今日 `memory/daily/*.md`、日历（下午时段）、`commitments.md`（检查今日剩余承诺的前置条件）。
+- **日终收尾（17:30）**：读取 `user.md`、今日 `memory/daily/*.md`、`commitments.md`（检查今日完成情况并标记过期的待确认）。
+- **晚间复盘（22:30）**：读取 `user.md`、今日 `memory/daily/*.md`、`commitments.md`（休息日：轻量提示明日到期的承诺；工作日：检查明日承诺的前置条件）。
 - **发送后跟进（+5min/+10min）**：不读取新文件，仅检查 `last_sent_message_id` 之后是否有新用户邮件。
 
 #### Step 4.5: 检查收件箱（Cron 触发时必做）

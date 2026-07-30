@@ -109,7 +109,7 @@ LifeOS 的底层世界观：**每个任务都是一次从 Current State（当前
 
 | 触发场景 | 读取位置 |
 |---------|---------|
-| Cron 触达（早安/状态检查/日终/晚间） | `profile/user.md`、`memory/daily/{today}.md`、`memory/daily/{yesterday}.md`、外部日历 API、外部待办 API |
+| Cron 触达（早安/状态检查/日终/晚间） | `profile/user.md`、`memory/daily/{today}.md`、`memory/daily/{yesterday}.md`、`planning/commitments.md`、外部日历 API、外部待办 API |
 | 用户主动回复 | `memory/daily/{today}.md`、上一次会话的 LEARN 记录、`memory/long-term.md`（如需跨日上下文） |
 | 复盘触发 | `planning/weekly-plan.md`、`planning/daily-plan.md`、`reviews/review-log.md`、`projects/projects.md`、近 7 日 `memory/daily/*.md` |
 | 深度问题 | `profile/life-compass.md`、`profile/user.md`、`memory/long-term.md`、相关 skill 的 cases 和 toolkit |
@@ -141,7 +141,7 @@ LifeOS 的底层世界观：**每个任务都是一次从 Current State（当前
 **读取什么**：
 
 - Step 1 输出的 Current State 摘要。
-- 本期计划/期望（来自 `planning/daily-plan.md`、`planning/weekly-plan.md`、ISA 文档中的 Claims）。
+- 本期计划/期望（来自 `planning/daily-plan.md`、`planning/weekly-plan.md`、`planning/commitments.md`、ISA 文档中的 Claims）。
 - 用户历史模式（来自 `memory/long-term.md`、`reviews/review-log.md`）。
 
 **做什么**：
@@ -201,6 +201,7 @@ LifeOS 的底层世界观：**每个任务都是一次从 Current State（当前
 | `plan_unrealistic` | `plan_adjustment` | 帮助用户调整计划容量或优先级 |
 | `context_shift` | `replan` | 根据新上下文重新安排 |
 | `no_plan` | `planning_assist` | 启动 planning skill 帮助用户制定计划 |
+| `commitment_overdue` | `commitment_followup` | 检查 commitments.md 中已过期或即将到期的承诺，提醒用户确认（延期/取消/完成） |
 
 2. **优先级排序**：
 
