@@ -33,7 +33,7 @@
 | 1 | **用户数据目录** | 检查 `life-coach-data/` 目录是否存在，且 `life-coach-data/profile/user.md` 是否有实际填写内容（非模板占位符） | 目录存在且 `user.md` 包含真实的用户作息、偏好等信息 |
 | 2 | **Cron 定时调度** | 询问用户是否已配置定时任务（如 Claude Code 的 `/loop` 命令或 settings.json hooks），或检查当前环境是否有活跃的 Cron 配置 | 至少有 1 个时间点（如 09:30 早安问候）已注册并测试通过 |
 | 3 | **邮件通道** | 检查 `life-coach-data/profile/user.md` 的 `## 企微配置` 章节是否填写了 `corp_id`、`agent_id` 和 `secret`（或环境变量），并尝试调用一次 `get_email_alias` API 验证连通性 | API 返回 `errcode=0`，可获取应用邮箱地址 |
-| 4 | **外部工具（可选）** | 检查滴答清单 MCP 是否可用（尝试调用 `get_today_tasks`） | MCP 调用返回任务列表（可为空列表，但不应报错） |
+| 4 | **外部工具（可选）** | 检查滴答清单 MCP 是否可用：尝试调用 AI 工具的 MCP 能力查询今日任务，或查看 MCP 服务器列表中是否存在 `dida365` | MCP 调用返回任务列表（可为空列表，但不应报错），或 AI 工具确认 MCP 连接正常 |
 
 ### 安装向导流程
 
@@ -96,18 +96,17 @@
 **第四步：配置滴答清单 MCP（可选）**
 
 1. 询问用户是否使用滴答清单（Dida/TickTick）。
-2. 如果使用：
-   a. 读取 `integrations/dida-mcp.md` 了解完整的集成规范。
-   b. 引导用户获取 API Token：
-      - 登录 https://dida365.com → 设置 → 开发者/API → 创建 Token
-      - 中国区用户用 `dida365.com`，国际区用户用 `ticktick.com`
-   c. 帮助用户在 AI 工具的 MCP 配置文件中添加滴答 MCP 服务：
-      - **Claude Code**：项目根目录或 `~/.claude/.mcp.json` 中添加 `"dida"` server 配置（command: `npx`, args: `-y @dida365/mcp-server`, env: `DIDA_API_TOKEN`）
-      - **Cursor**：`~/.cursor/mcp.json` 中同上配置
-      - **其他工具**：参照 `integrations/dida-mcp.md` 附录 A 的通用配置模板
-   d. 验证连接：尝试调用 `get_today_tasks`，确认返回正常（空列表也算正常）。
-3. 如果滴答不可用（未注册、Token 获取失败、网络问题），告知用户：「待办事项会先记录在本地 Markdown 文件中，滴答接入后可以同步。教练对话的核心能力不依赖滴答，可以随时开始。」
-4. 如果用户不使用滴答，跳过此步骤，待办管理全部走本地 Markdown 文件。
+2. 如果使用，读取 `integrations/dida-mcp.md` 获取完整的连接配置指南：
+   - **MCP 服务器 URL**：`https://mcp.dida365.com`（Streamable HTTP 协议）
+   - **认证方式**：OAuth 2.0（推荐）或 Bearer Token（在滴答网页版「设置→账户与安全→API 口令」获取）
+3. 根据用户使用的 AI 工具，从 `integrations/dida-mcp.md` 的「各 AI 工具配置方法」中找到对应的配置方式，引导用户完成安装：
+   - Claude Code：运行 `claude mcp add --transport http dida365 https://mcp.dida365.com`，然后在会话中执行 `/mcp` 完成 OAuth 授权
+   - Claude Desktop：Customize > Connectors > Add Connector，填入 URL
+   - Cursor：编辑 `.cursor/mcp.json`，填入服务器配置
+   - VS Code：编辑 `.vscode/mcp.json`，填入服务器配置
+   - 其他客户端：参考 `integrations/dida-mcp.md` 中的通用配置要素
+4. 配置完成后，通过发送「我今天有哪些任务？」验证 MCP 连接是否正常。
+5. 如果滴答不可用或用户暂不配置，告知用户：待办事项会先记录在本地 Markdown 文件中，滴答接入后可以同步。
 
 ### 安装完成
 

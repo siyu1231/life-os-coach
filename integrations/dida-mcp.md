@@ -1,6 +1,167 @@
 # 滴答清单 MCP 集成
 
-> 定义 Agent 如何通过 MCP 协议与滴答清单（Dida）交互，包括能力映射、降级策略、数据边界和操作规范。
+> 定义 Agent 如何通过 MCP 协议与滴答清单（Dida）交互，包括连接配置、能力映射、降级策略、数据边界和操作规范。
+
+## 零、MCP 连接配置
+
+### 服务器信息
+
+| 项目 | 值 |
+|------|-----|
+| **MCP 服务器 URL** | `https://mcp.dida365.com` |
+| **传输协议** | Streamable HTTP |
+| **认证方式** | OAuth 2.0（推荐）或 Bearer Token |
+
+### Bearer Token 获取方式
+
+如需使用 Bearer Token 替代 OAuth，前往 [网页版滴答清单](https://dida365.com)，点击「头像」→「设置」→「账户与安全」→「API 口令」，创建并复制 Token。
+
+### 各 AI 工具配置方法
+
+#### Claude Desktop
+
+1. 打开 Claude Desktop，进入 **Customize** > **Connectors**
+2. 点击 "+"，选择 **Add Connector**
+3. 填写 MCP 服务器 URL：`https://mcp.dida365.com`
+4. 保存后点击 **Connect**，按提示完成 OAuth 登录和授权
+
+#### Claude Code
+
+OAuth 方式（推荐）：
+
+```bash
+claude mcp add --transport http dida365 https://mcp.dida365.com
+```
+
+然后在 Claude Code 会话中运行 `/mcp`，按提示完成 OAuth 授权。
+
+Bearer Token 方式：
+
+```bash
+claude mcp add --transport http dida365 https://mcp.dida365.com --header "Authorization: Bearer YOUR_TOKEN_HERE"
+```
+
+#### Cursor
+
+1. 打开 Cursor，进入 **Cursor Settings** > **Tools & MCP** > **Add Custom MCP**
+2. 编辑 `.cursor/mcp.json`：
+
+```json
+{
+  "mcpServers": {
+    "dida365": {
+      "url": "https://mcp.dida365.com"
+    }
+  }
+}
+```
+
+3. 保存后在已安装的 MCP 服务中找到滴答清单，点击 **connect** 完成 OAuth 授权
+
+Bearer Token 方式：
+
+```json
+{
+  "mcpServers": {
+    "dida365": {
+      "url": "https://mcp.dida365.com",
+      "headers": {
+        "Authorization": "Bearer YOUR_TOKEN_HERE"
+      }
+    }
+  }
+}
+```
+
+#### VS Code
+
+1. 创建工作区文件 `.vscode/mcp.json`：
+
+```json
+{
+  "servers": {
+    "dida365": {
+      "type": "http",
+      "url": "https://mcp.dida365.com"
+    }
+  }
+}
+```
+
+2. 保存后按指引在浏览器中完成 OAuth 授权
+3. 也可通过命令面板（Ctrl+Shift+P）运行 **Add Server**，选择 **HTTP**，输入 URL 和 ID
+
+Bearer Token 方式在配置中添加 `headers` 字段：
+
+```json
+{
+  "servers": {
+    "dida365": {
+      "type": "http",
+      "url": "https://mcp.dida365.com",
+      "headers": {
+        "Authorization": "Bearer YOUR_TOKEN_HERE"
+      }
+    }
+  }
+}
+```
+
+#### Codex
+
+终端命令方式：
+
+```bash
+codex mcp add dida365 --url https://mcp.dida365.com
+```
+
+或通过 Codex App：**设置 > 插件 > MCP > 添加服务器**，选择「流式 HTTP」，输入 URL，保存后点击「进行身份验证」。
+
+#### ChatGPT
+
+支持 Business 及 Enterprise 套餐。进入 **设置 > 应用 > 高级设置**，开启开发人员模式，点击「创建应用」，填写 URL `https://mcp.dida365.com`，按提示完成 OAuth 授权。
+
+#### TRAE
+
+进入 **设置 > MCP > 添加 > 手动添加**，配置：
+
+```json
+{
+  "mcpServers": {
+    "dida365": {
+      "url": "https://mcp.dida365.com"
+    }
+  }
+}
+```
+
+保存后找到滴答清单，点击「前往验证」完成 OAuth 授权。
+
+#### 其他支持 MCP 的客户端
+
+通用配置要素：
+- **传输协议**：Streamable HTTP（不支持 SSE）
+- **URL**：`https://mcp.dida365.com`
+- **认证**：OAuth 2.0（自动刷新 Token，无需重复登录）或 Bearer Token
+
+### 连接验证
+
+配置完成并授权后，在 AI 工具中执行以下验证：
+
+> 「我今天有哪些任务？」
+
+如果 MCP 连接正常，AI 会返回你滴答清单中的今日任务列表（空列表也说明连接成功）。如果返回错误或提示未连接，检查：
+1. 是否已完成 OAuth 授权流程
+2. 客户端是否支持 Streamable HTTP 协议
+3. Bearer Token 是否过期或填写正确
+
+### 常见问题
+
+- **客户端不支持 Streamable HTTP？** 滴答清单 MCP 仅支持 Streamable HTTP，不支持 SSE。如果客户端只支持 SSE，暂时无法连接。
+- **每次重启需要重新登录吗？** 不需要。OAuth 支持 Token 自动刷新，除非长时间未使用或主动撤销授权。
+- **操作未按预期执行？** 尝试使用更明确的描述（指定清单名称、日期、优先级），或将复杂请求拆分为多步。
+
+---
 
 ## 一、能力映射表
 
@@ -283,127 +444,3 @@ MCP 恢复 ──→ 询问用户是否批量同步本地待同步条目
 - `coach/skills/planning/SKILL.md`：计划 skill 的滴答集成规则和降级策略。
 - `integrations/tools.md`：通用工具适配层原则，滴答 MCP 作为具体实现遵循。
 - `_reference/life-coach/templates/integrations/tools.md`：工具与数据来源模板。
-
-## 附录 A：MCP 服务配置
-
-> 本节为 AI 工具实现者提供滴答清单 MCP 服务的具体配置方法。
-
-### A.1 前置条件
-
-1. 拥有滴答清单账号（https://dida365.com 注册）
-2. 滴答清单支持 MCP 协议的客户端版本（Web/桌面端均可）
-3. 在滴答清单中生成 API Token（用于 MCP 认证）
-
-### A.2 获取 API Token
-
-1. 登录滴答清单网页版 https://dida365.com
-2. 进入「设置」→「开发者」或「API」页面
-3. 创建一个新的 API Token（或 Access Token）
-4. 保存 Token 值（仅创建时可见一次）
-
-### A.3 Claude Code 中的 MCP 配置
-
-在项目根目录或用户目录的 `.mcp.json` 中添加滴答 MCP 服务：
-
-```json
-{
-  "mcpServers": {
-    "dida": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@dida365/mcp-server"
-      ],
-      "env": {
-        "DIDA_API_TOKEN": "<你的 API Token>"
-      }
-    }
-  }
-}
-```
-
-或者使用环境变量方式（推荐，避免 Token 写入配置文件）：
-
-```json
-{
-  "mcpServers": {
-    "dida": {
-      "command": "npx",
-      "args": ["-y", "@dida365/mcp-server"]
-    }
-  }
-}
-```
-
-然后在 shell 配置文件（`.bashrc`、`.zshrc`）或系统环境变量中设置：
-
-```bash
-export DIDA_API_TOKEN="<你的 API Token>"
-```
-
-### A.4 Cursor / Windsurf 中的 MCP 配置
-
-在 `~/.cursor/mcp.json`（Cursor）或 IDE 的 MCP 设置中添加：
-
-```json
-{
-  "mcpServers": {
-    "dida": {
-      "command": "npx",
-      "args": ["-y", "@dida365/mcp-server"],
-      "env": {
-        "DIDA_API_TOKEN": "<你的 API Token>"
-      }
-    }
-  }
-}
-```
-
-### A.5 其他支持 MCP 的 AI 工具
-
-对于任何支持 MCP 协议的工具，配置结构均类似：
-
-| 字段 | 值 |
-|------|-----|
-| Server Name | `dida` |
-| Command | `npx` |
-| Args | `-y`, `@dida365/mcp-server` |
-| 环境变量 | `DIDA_API_TOKEN=<你的 API Token>` |
-
-### A.6 验证配置
-
-配置完成后，验证 MCP 是否正常连接：
-
-1. 重启 AI 工具（使 MCP 配置生效）
-2. 在对话中要求 AI 工具调用滴答 MCP 的 `get_today_tasks` 工具
-3. 如果返回任务列表（即使是空列表），说明连接成功
-4. 如果返回错误，检查：
-   - API Token 是否正确
-   - 网络是否能访问 `dida365.com`
-   - MCP server 包是否能通过 `npx` 下载
-
-### A.7 配置失败时的处理
-
-如果 MCP 配置不成功：
-
-1. 检查 `npx @dida365/mcp-server` 是否能正常运行
-2. 确认使用的滴答清单区域（中国区 `dida365.com` / 国际区 `ticktick.com`），Token 需在对应区域生成
-3. 如仍无法配置，Agent 将使用本地 Markdown 降级模式，待办管理不会中断
-
-### A.8 MCP Server 可用的 Tools 列表
-
-配置成功后，滴答 MCP 通常暴露以下 tools：
-
-| Tool 名称 | 功能 | 关键参数 |
-|-----------|------|---------|
-| `get_today_tasks` | 获取今日待办 | 无 |
-| `get_all_tasks` | 获取全部任务 | `project_id`（可选）, `filter`（可选） |
-| `get_projects` | 获取项目列表 | 无 |
-| `create_task` | 创建任务 | `title`, `due_date`, `priority`, `tags`, `project_id` |
-| `complete_task` | 完成任务 | `task_id` |
-| `uncomplete_task` | 取消完成 | `task_id` |
-| `delete_task` | 删除任务 | `task_id` |
-| `update_task` | 更新任务 | `task_id`, 更新字段 |
-| `get_task` | 获取任务详情 | `task_id` |
-
-具体 tool 名称和参数以实际 MCP 返回的 tool schema 为准。AI 工具在启动时应读取 MCP 的 tool 列表，根据实际 schema 调用。
