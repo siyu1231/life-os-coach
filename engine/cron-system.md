@@ -464,8 +464,8 @@ grep -c "工作日\|休息日\|假期\|节假日" engine/cron-system.md
 
 ## 与其他 engine 模块的关系
 
-- **session-flow.md**：读取本文件的调度规则，在每个 Cron 触发时调用 `getDayType()` 判断是否执行；发送消息后设置 +5min/+10min 动态 Timer。
-- **email-protocol.md**：当 Cron 触发的消息需要邮件渠道发送时（例如非 IM 场景），通过 email-protocol 的模板规则组装邮件内容。
+- **session-flow.md**：读取本文件的调度规则，在每个 Cron 触发时调用 `getDayType()` 判断是否执行；发送消息后设置 +5min/+10min 动态 Timer；Cron 触发时先检查收件箱（Phase 1 Step 4.5）确保不遗漏用户已发送但未处理的回复。
+- **email-protocol.md**：当 Cron 触发的消息需要邮件渠道发送时（例如非 IM 场景），通过 email-protocol 的模板规则组装邮件内容；收件箱检查使用 email-protocol 的 `list_mail` / `get_mail_content` API + 去重集合。
 
 ## 维护说明
 
