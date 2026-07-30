@@ -47,7 +47,8 @@ life-coach-data/
 │   └── life-compass.md
 ├── planning/
 │   ├── weekly-plan.md
-│   └── daily-plan.md
+│   ├── daily-plan.md
+│   └── commitments.md
 ├── projects/
 │   └── projects.md
 ├── habits/
@@ -537,6 +538,6 @@ grep -c "拆分\|阈值\|触发条件\|满足.*条" system/memory-system.md
 - `system/isa-system.md`：ISA 格式定义，ISA 文档的存放位置和生命周期遵循本文件的规则。
 - `system/verification.md`：三级验证系统，本文件的 Tier 写入协议中的 VERIFY 参考。
 - `engine/session-flow.md`：会话状态机，Phase 5 的文件写入操作遵循本文件的安全等级。
-- `integrations/dida-mcp.md`（待编写）：滴答清单 MCP 集成，本文件定义的滴答数据边界的 API 实现。
+- `integrations/dida-mcp.md`：滴答清单 MCP 集成，本文件定义的滴答数据边界的 API 实现。
 - `_reference/life-coach/references/memory-system.md`：原始记忆系统参考，本文件的基础内容来源。
 - `_reference/life-coach/references/coaching-process.md`：教练流程，Tier D 中情绪信息处理的参考方法论。

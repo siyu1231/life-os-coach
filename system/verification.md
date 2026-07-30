@@ -599,4 +599,4 @@ grep -c "没有证据\|可证伪\|工具证据\|数据优先" system/verificatio
 - `system/memory-system.md`：记忆系统，本文件的验证记录写入 daily memory 的格式规范。
 - `engine/session-flow.md`：会话状态机，Phase 6（闭环）依赖于本文件的验证结果。
 - `engine/email-protocol.md`：邮件收发协议，邮件发送和接收的 L1/L2 验证依据。
-- `integrations/dida-mcp.md`（待编写）：滴答清单 MCP 集成，滴答任务状态的 L1 验证实现。
+- `integrations/dida-mcp.md`：滴答清单 MCP 集成，滴答任务状态的 L1 验证实现。

@@ -446,21 +446,22 @@ Phase 3 收到有效用户回复（非特殊指令）后进入。
 
 ### 分类体系
 
-用户回复被分类为以下四种类型：
+用户回复被分类为以下五种类型：
 
 | 类型 | 标识 | 典型特征 | 示例 |
 |------|------|---------|------|
 | **纯状态更新** | `status_update` | 用户汇报进展、状态，无显式求助或深层情绪。语气中性或积极。 | 「下午推进了设计稿，基本完成。」「今天三件事都做完了。」 |
+| **新建意图/计划** | `create_intent` | 用户表达了未来要做某事的意图——不是改现有的计划，而是创造一个新的计划/承诺/目标。有明确的目标日期或时间范围。 | 「我打算下个月开始备战公务员考试。」「周末想去看电影。」「下周开始每天跑步。」「今年结束前要完成那个项目。」 |
 | **情绪困难信号** | `emotional_signal` | 用户表达疲惫、挫败、焦虑、无力、迷茫等情绪。可能有具体困难，也可能只是「今天好累」的单纯情绪。 | 「下午效率很低，一直卡着。」「今天特别累，什么都不想干。」「感觉自己什么都做不好。」 |
-| **修改请求** | `modification_request` | 用户对计划、优先级、节奏提出调整。语气中性，关注点在行动层面。 | 「下午的优先级变了，先做 B 项目。」「明天能不能改成 8 点？」「暂停今天的提醒。」 |
+| **修改请求** | `modification_request` | 用户对已有计划、优先级、节奏提出调整。语气中性，关注点在行动层面。修改的是**已有**计划，而非创建新计划。 | 「下午的优先级变了，先做 B 项目。」「明天能不能改成 8 点？」「暂停今天的提醒。」「之前说的考公推迟一个月。」 |
 | **深度问题** | `deep_question` | 用户提出需要推理、分析、多步拆解的问题。涉及价值选择、复杂决策、长期方向、人际关系等。 | 「我在想是不是该换方向了。」「这个项目和另一个项目冲突了，不知道先做哪个。」 |
 
 ### 分类 Prompt（供 AI 工具使用）
 
 ```text
-你是 Life Coach Agent 的分类器。分析以下用户邮件回复，归类为四种类型之一。
+你是 Life Coach Agent 的分类器。分析以下用户消息，归类为五种类型之一。
 
-用户回复内容：
+用户消息内容：
 '''
 {user_message.content}
 '''
@@ -469,25 +470,41 @@ Phase 3 收到有效用户回复（非特殊指令）后进入。
 - 当前时间点：{cron_slot}（Agent 发送的邮件是 {TIME_LABEL}）
 - 用户今日已记录状态：{今日 memory/daily 摘要}
 - 用户底图关键信息：{user_profile 摘要}
+- 已有承诺列表（用于判断是新承诺还是修改已有承诺）：{pending commitments 摘要}
 
 分类标准：
 1. 纯状态更新（status_update）：用户汇报进展、状态，语气中性或积极，无显式求助或深层情绪。
-2. 情绪困难信号（emotional_signal）：用户表达疲惫、挫败、焦虑、无力、迷茫等情绪，或使用负面评价自身能力的语言。
-3. 修改请求（modification_request）：用户对计划、优先级、节奏、设置提出具体调整要求。
-4. 深度问题（deep_question）：用户提出需要多步分析、涉及价值选择或复杂决策的问题。
+2. 新建意图/计划（create_intent）：用户表达了未来要做某事的明确意图，有时间、有行动、有目标日期，且这是新创造的计划/承诺——不是修改已有计划。
+3. 情绪困难信号（emotional_signal）：用户表达疲惫、挫败、焦虑、无力、迷茫等情绪，或使用负面评价自身能力的语言。
+4. 修改请求（modification_request）：用户对已有计划、优先级、节奏、设置提出具体调整——调整的是已存在的东西，不是创造新的。
+5. 深度问题（deep_question）：用户提出需要多步分析、涉及价值选择或复杂决策的问题。注意：如果用户是「不确定这事儿值不值得列入计划」的探索性问题，优先归为 deep_question 而非 create_intent。
+
+区分 create_intent vs modification_request 的关键：
+- 如果用户说「我打算下周开始 ___」→ create_intent（新创造）
+- 如果用户说「下周的那个事推迟到周三」→ modification_request（改已有）
+- 如果用户说「我之前说想考公，现在想确认这个方向」→ create_intent（首次确认意图，此前只是讨论）
+- 如果用户说「考公的计划我决定不做了」→ modification_request（cancel 已有承诺）
 
 输出格式（JSON）：
 {
-  "classification": "<四种类型之一>",
+  "classification": "<五种类型之一>",
   "confidence": <0.0 到 1.0>,
   "summary": "<一句话总结用户说了什么>",
   "key_signals": ["<识别到的关键信号词或短语>"],
+  "intent_fields": {
+    "what": "<用户想做什么>",
+    "when": "<目标日期/时间范围，如果用户说了>",
+    "prerequisite": "<用户提到的前置条件或检查项，如果有>"
+  },
   "reasoning": "<归类依据，引用用户原文中的具体表述>"
 }
 
 注意：
+- 分类时引用已有承诺列表来判断是否是新承诺 vs 修改已有承诺。
 - 如果用户同时表达了状态和情绪，优先归为 emotional_signal（情绪优先原则）。
-- 如果用户提出了问题但语气较轻（如「你觉得呢」），检查是否有深层需求。如果仅为轻量确认，可归为 status_update。
+- 如果用户给的是明确的指令/请求（如「改成 8 点」），优先归为 modification_request（指令优先原则）。
+- 如果用户提出了需要分析的问题，优先归为 deep_question（深度优先原则）。
+- 如果用户表达了具体的未来意图（新创造的计划），优先归为 create_intent（意图优先原则）。
 - 如果无法确定，confidence 设为低于 0.6，并在 reasoning 中说明不确定性。
 ```
 
@@ -495,7 +512,8 @@ Phase 3 收到有效用户回复（非特殊指令）后进入。
 
 1. **情绪优先**：如果用户回复中同时包含状态更新和情绪表达（如「做完了但很累」），优先归为 `emotional_signal`。情绪需要先被承接，再谈其他。
 2. **指令优先**：如果用户给的是明确的指令/请求（如「改成 8 点」），即使带有情绪（如「烦死了，改成 8 点吧」），优先归为 `modification_request`。用户给了清晰指令时，先执行再安抚。
-3. **深度优先**：如果用户提出了需要分析的问题，即使描述中包含状态（如「今天我做了 A 和 B，但我在想是不是该换方向了」），优先归为 `deep_question`。用户在寻求帮助思考，而非仅仅汇报。
+3. **意图优先**：如果用户表达了未来要做某事的**具体意图**（有时间、有行动、有目标日期），且这是**创造一个新的未来承诺**而非**修改已有计划**，优先归为 `create_intent`。区分标准：「调整已有计划」→ `modification_request`；「创造新的未来承诺/项目/目标」→ `create_intent`。
+4. **深度优先**：如果用户提出了需要分析的问题，即使描述中包含状态（如「今天我做了 A 和 B，但我在想是不是该换方向了」），优先归为 `deep_question`。用户在寻求帮助思考，而非仅仅汇报。
 
 ### 分类结果的使用
 
@@ -503,6 +521,7 @@ Phase 3 收到有效用户回复（非特殊指令）后进入。
 
 - `summary` 字段写入 `session_context`，供后续 memory 写入使用。
 - `key_signals` 字段用于判断是否需要更新 `profile/user.md` 中的精力/执行线索（如多次出现「下午效率低」可能意味着精力低谷模式）。
+- `intent_fields` 字段（仅 `create_intent` 分类有值）写入 `session_context.create_intent`，供 Phase 5 的 Action E 使用。
 - `confidence` 低于 0.6 时，Phase 5 应采取更保守的行动（优先询问澄清而非直接执行）。
 
 ### 出口
@@ -517,9 +536,9 @@ Phase 4 分类完成后进入。
 
 ### 职责
 
-行动阶段的职责是**根据用户回复的四种分类，分别执行对应的 Action 策略**。每个策略包含三个核心要素：承接方式、操作动作、是否回复用户。
+行动阶段的职责是**根据用户回复的五种分类，分别执行对应的 Action 策略**。每个策略包含三个核心要素：承接方式、操作动作、是否回复用户。
 
-### 四种分类的 Action 策略
+### 五种分类的 Action 策略
 
 #### Action A: 纯状态更新（status_update）
 
@@ -591,10 +610,16 @@ Phase 4 分类完成后进入。
 | 计划/优先级修改 | 更新 `planning/daily-plan.md` 或 `planning/weekly-plan.md` 中的对应条目 |
 | Cron 配置修改（如时间调整） | 更新 `profile/user.md` 的 `## Cron配置` 章节中的对应参数 |
 | 消息偏好修改 | 更新 `profile/user.md` 的沟通偏好部分 |
+| 未来承诺修改（延期/取消/改日期） | 更新 `planning/commitments.md` 中对应条目的状态或日期字段 |
 | 其他设置修改 | 更新对应配置文件 |
 
 2. 将修改记录写入 `memory/daily/{today}.md`。
 3. 如果修改影响了今日后续的 Cron 行为（如暂停一天），设置对应标记供后续 Cron 触发时检查。
+4. **告知后续影响**：除了告知已执行的修改本身，还告知用户这次修改带来的连锁影响：
+   - 如果修改了优先级：哪个任务被推后了？
+   - 如果修改了日期：Agent 下次什么时候会提到这个承诺？
+   - 如果取消了计划：该计划关联的 ISA 或承诺是否需要更新？
+5. **标记计划已变更**：在 Phase 6 写入 `memory/daily/{today}.md` 时，追加一条标记 `⚠️ plan-changed: {修改类型} — {修改内容}`。该标记在下一次 Cron 触发的 CHECK 阶段被读取，作为「上次发生了什么变化」的入口数据。
 
 **是否回复用户**：必须回复。回复内容为：
 - 确认已理解和执行修改。
@@ -646,6 +671,71 @@ Phase 4 分类完成后进入。
 {CURRENT_TIME_LABEL 的默认消息，或替换为「如果愿意，可以在下一个时间点多聊几句。」}
 ```
 
+#### Action E: 新建意图/计划（create_intent）
+
+**目标**：将用户表达的未来意图结构化存储，确认关键字段，确保 Cron 系统在未来时间点主动跟进。
+
+**承接方式**：
+- 先确认关键字段——不急着保存，先确保理解正确。
+- 区分「清晰意图」和「模糊意图」：
+  - 清晰意图（有具体时间、有具体行动）→ 直接存入 `planning/commitments.md`
+  - 模糊意图（「我想做 ___ 但还不确定时间/方式」）→ 存入 `memory/long-term.md` 的「待确认意图」区域，下一次对话时确认
+
+**操作动作**：
+
+1. 如果用户提供的意图信息足够清晰（同时满足：知道做什么 + 大致知道何时做）：
+   - 将意图写入 `planning/commitments.md` 的当前表，生成 #ID。
+   - 填入字段：承诺内容（引用用户原话）、目标日期、来源对话、提醒时间（根据目标日期自动判断——在同一天 → `all`；在数天内 → `night_review`；在数周后 → `morning`）。
+   - 如果用户提到了前置条件（如「看电影前先买票」），填入前置检查列。
+
+2. 如果用户的意图信息不够清晰（缺少日期、缺少具体行动或范围过广）：
+   - 在回复中追问 1-2 个关键问题上限（一封邮件不超过两个问题）。
+   - 在本次 Phase 6 写入 `memory/daily/{today}.md` 时标记一条「待确认意图」。
+   - 下次 Cron 触达时，Agent 读取 `memory/long-term.md` 的「待确认意图」部分，如果未过期，在合适的 Cron 节点提醒确认。
+
+3. 如果意图涉及一个需要长期准备的事项（如「下个月开始备考」）：
+   - 除了写入 `planning/commitments.md`，还要检查是否需要创建 ISA 文档（如果该意图足够大，满足「大于一眼能回答」的标准——见 `system/isa-system.md`）。
+   - 如果意图涉及滴答清单（如「下周开始每天跑步」是日常任务），检查是否需要创建重复任务。
+
+4. 如果意图涉及**需要提前做什么**（如周末看电影需要提前买票）：
+   - 将前置动作作为一条单独的 commitment 写入——与主承诺关联（`前置动作: 为 #3 买电影票`）。
+
+**写入数据**：
+
+| 写入位置 | 内容 | 何时写入 |
+|---------|------|---------|
+| `planning/commitments.md` | 待办承诺（一条新行） | ACT 阶段直接写入（Tier A — 用户刚确认的意图） |
+| `memory/daily/{today}.md` | 「用户表达了 ___ 的意图，已在 commitments.md 记录」 | Phase 6 闭环时记录 |
+| `memory/long-term.md` →「待确认意图」区域 | 不清晰的意图，待下次对话确认 | Phase 6 闭环时标记 |
+| ISA 文档（可选） | 如果意图足够大，需要 ISA | ACT 阶段创建 |
+
+**是否回复用户**：必须回复。回复内容包含：
+
+```
+好的，记下了。{意图的一句话确认}。
+
+→ 目标日期：{YYYY-MM-DD}
+→ 在此之前：{前置检查项，如果有}
+→ 我会在接近那天时提醒你。
+
+（如果信息不清晰：追问 1-2 个问题）
+
+{CURRENT_TIME_LABEL 的默认消息}
+```
+
+**回复邮件模板**：
+
+```text
+收到，已经把这条放进承诺追踪里了。
+
+- 📌 {意图的一句话确认}
+- 📅 目标日期：{YYYY-MM-DD}
+- ⏰ 提醒时机：我会在 {提醒提前量} 列出来
+- 🔔 前置：{前置检查项，如果没有就写"无"}
+
+{如果意图不清晰，追问 1-2 个问题}
+```
+
 ### Action 执行后的判断
 
 每个 Action 执行完毕后，判断是否需要回到 Phase 2（触达）发送回复邮件：
@@ -656,6 +746,7 @@ Phase 4 分类完成后进入。
 | B: emotional_signal | 是 | 2. 触达（发送回复后 → 3.接收） |
 | C: modification_request | 是 | 2. 触达（发送回复后 → 3.接收） |
 | D: deep_question | 是 | 2. 触达（发送回复后 → 3.接收） |
+| E: create_intent | 是 | 2. 触达（发送回复后 → 3.接收） |
 
 **注意**：回到 Phase 2（触达）发送回复后，会话会再次进入 Phase 3（接收）等待用户二次回复。但会话生命周期不变（仍从首次 `session_started_at` 算起），且同一会话内**最多允许一次回环**（即发送回复后如果用户二次回复，优先开启新会话处理）。
 
@@ -830,8 +921,8 @@ log("会话闭环完成", session_id)
 
 ## 与 system 层模块的关系
 
-- **system/algorithm.md**（待编写）：定义了 Agent 的执行循环和推理框架。session-flow 的状态机是 algorithm 中「执行循环」在邮件场景下的具体实例化。Phase 4（理解）的分类 Prompt 和 Phase 5（行动）的四种 Action 策略遵循 algorithm 中定义的推理-行动范式。
-- **system/memory-system.md**（待编写）：定义了记忆的读写规则和维护周期。Phase 1（采集）依据 memory-system 的「启动时读取」规则决定读取哪些文件；Phase 6（闭环）依据 memory-system 的「写入规则」决定写入哪些内容到 daily memory、long-term memory、cursor 和 user profile。
+- **system/algorithm.md**：定义了 Agent 的执行循环和推理框架。session-flow 的状态机是 algorithm 中「执行循环」在邮件场景下的具体实例化。Phase 4（理解）的分类 Prompt 和 Phase 5（行动）的五种 Action 策略遵循 algorithm 中定义的推理-行动范式。
+- **system/memory-system.md**：定义了记忆的读写规则和维护周期。Phase 1（采集）依据 memory-system 的「启动时读取」规则决定读取哪些文件；Phase 6（闭环）依据 memory-system 的「写入规则」决定写入哪些内容到 daily memory、long-term memory、cursor 和 user profile。
 
 ## AI 工具实现指导
 
@@ -935,16 +1026,16 @@ grep -c "无回复\|发送失败\|节假日\|边界情况" engine/session-flow.m
 ### 分类体系覆盖检查
 
 ```bash
-grep -c "status_update\|emotional_signal\|modification_request\|deep_question" engine/session-flow.md
+grep -c "status_update\|emotional_signal\|modification_request\|deep_question\|create_intent" engine/session-flow.md
 ```
 
-预期：至少匹配 4（四种分类各自出现）。
+预期：至少匹配 5（五种分类各自出现）。
 
 ## References
 
 - `engine/cron-system.md`：Cron 调度规则，session-flow 的上游触发源和动态 Timer 规则。
 - `engine/email-protocol.md`：邮件收发协议，session-flow 的消息通道和模板变量来源。
-- `system/algorithm.md`（待编写）：Agent 执行循环和推理框架，session-flow 状态机是其实例化。
-- `system/memory-system.md`（待编写）：记忆读写规则和维护周期，session-flow 在 Phase 1 和 Phase 6 中读写。
+- `system/algorithm.md`：Agent 执行循环和推理框架，session-flow 状态机是其实例化。
+- `system/memory-system.md`：记忆读写规则和维护周期，session-flow 在 Phase 1 和 Phase 6 中读写。
 - `_reference/life-coach/references/coaching-process.md`：教练流程参考，Phase 5 emotional_signal 的情绪承接方法来源。
 - `_reference/life-coach/references/memory-system.md`：本地记忆系统参考，Phase 6 写入规则的背景知识。

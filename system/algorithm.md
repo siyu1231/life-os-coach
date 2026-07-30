@@ -114,7 +114,7 @@ LifeOS 的底层世界观：**每个任务都是一次从 Current State（当前
 | 复盘触发 | `planning/weekly-plan.md`、`planning/daily-plan.md`、`reviews/review-log.md`、`projects/projects.md`、近 7 日 `memory/daily/*.md` |
 | 深度问题 | `profile/life-compass.md`、`profile/user.md`、`memory/long-term.md`、相关 skill 的 cases 和 toolkit |
 
-读取策略遵循 `system/memory-system.md`（待编写）的「启动时读取什么」规则。
+读取策略遵循 `system/memory-system.md` 的「启动时读取什么」规则。
 
 **做什么**：
 
@@ -357,7 +357,7 @@ LifeOS 的底层世界观：**每个任务都是一次从 Current State（当前
 
 #### 6.2 写入规则
 
-遵循 `system/memory-system.md`（待编写）的写入规则：
+遵循 `system/memory-system.md` 的写入规则：
 
 - **事实**（工具数据、用户原话）→ 直接写入 daily memory。
 - **假设**（Agent 的临时推断）→ 写入 daily memory 并标注「暂时假设」。
@@ -419,7 +419,7 @@ LEARN（记录洞察）   ←→   Phase 6 闭环的 memory 写入 + 游标更�
 
 ## 五、与记忆系统的配合
 
-algorithm 的每个步骤都与记忆系统（`system/memory-system.md`，待编写）有明确的读写关系：
+algorithm 的每个步骤都与记忆系统（`system/memory-system.md`）有明确的读写关系：
 
 | algorithm 步骤 | 读 memory | 写 memory |
 |---------------|----------|----------|
@@ -506,7 +506,7 @@ algorithm 的 6 步是一个逻辑循环，但实现时不需要严格的 `while
 
 | 外部工具 | 在 algorithm 中的使用位置 | 接口约定 |
 |---------|------------------------|---------|
-| 滴答清单 MCP | CHECK（读待办）、ACT（创建/更新任务）、VERIFY（查询确认） | 见 `integrations/dida-mcp.md`（待编写） |
+| 滴答清单 MCP | CHECK（读待办）、ACT（创建/更新任务）、VERIFY（查询确认） | 见 `integrations/dida-mcp.md` |
 | 企微邮件 API | ACT（发送）、VERIFY（确认发送） | 见 `engine/email-protocol.md` |
 | 日历 API | CHECK（读日程） | 以本地计划文件为主要事实源，日历为辅助 |
 | 天气 API | CHECK（早安节点） | 降级友好：不可用时跳过天气相关内容即可 |
@@ -558,8 +558,8 @@ grep -c "session-flow\|cron-system\|email-protocol" system/algorithm.md
 - `engine/cron-system.md`：Cron 调度规则，algorithm 的触发源。
 - `engine/email-protocol.md`：邮件收发协议，algorithm 在邮件通道下的 ACT 和 VERIFY 实现。
 - `system/isa-system.md`：ISA 格式定义，algorithm 的 GAP 和 VERIFY 的标准来源。
-- `system/memory-system.md`（待编写）：记忆读写规则，algorithm 的 CHECK 和 LEARN 的读写依据。
-- `integrations/dida-mcp.md`（待编写）：滴答清单 MCP 集成，algorithm 的 CHECK 和 ACT 的外部工具。
+- `system/memory-system.md`：记忆读写规则，algorithm 的 CHECK 和 LEARN 的读写依据。
+- `integrations/dida-mcp.md`：滴答清单 MCP 集成，algorithm 的 CHECK 和 ACT 的外部工具。
 - `_reference/life-coach/references/coaching-process.md`：教练流程，algorithm 中情绪承接的参考方法论。
 - `_reference/life-coach/references/act-core.md`：ACT 底层操作参考，algorithm 中「最小下一步」和「失败数据也有用」的理论基础。
 - `_reference/life-coach/references/memory-system.md`：本地记忆系统参考，algorithm 中记忆读写规则的背景知识。

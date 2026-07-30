@@ -386,13 +386,13 @@ ISA 涉及滴答清单的验证方式使用 `api_query` 类型：
 → 验证：api_query（滴答 MCP `get_task` 确认 task_id={id} 的 status=completed）
 ```
 
-具体 API 调用方式见 `integrations/dida-mcp.md`（待编写）。
+具体 API 调用方式见 `integrations/dida-mcp.md`。
 
 ---
 
 ## 九、与记忆系统的配合
 
-ISA 文档本身存放在哪里、如何管理，遵循 `system/memory-system.md`（待编写）的规则：
+ISA 文档本身存放在哪里、如何管理，遵循 `system/memory-system.md` 的规则：
 
 ### 9.1 存放位置
 
@@ -475,7 +475,7 @@ grep -c "滴答\|dida" system/isa-system.md
 ## References
 
 - `system/algorithm.md`：执行循环，ISA 在 GAP 和 VERIFY 阶段的标准来源。
-- `system/memory-system.md`（待编写）：记忆读写规则，ISA 的存放、生命周期和归档规则。
-- `integrations/dida-mcp.md`（待编写）：滴答清单 MCP 集成，ISA Claims 映射到滴答子任务和 `api_query` 验证方式的实现。
+- `system/memory-system.md`：记忆读写规则，ISA 的存放、生命周期和归档规则。
+- `integrations/dida-mcp.md`：滴答清单 MCP 集成，ISA Claims 映射到滴答子任务和 `api_query` 验证方式的实现。
 - `engine/session-flow.md`：会话状态机，ISA 在 Phase 5（行动）和 Phase 6（闭环）中的使用。
 - `_reference/life-coach/references/memory-system.md`：本地记忆系统参考，ISA 在长期记忆中定位的背景知识。
