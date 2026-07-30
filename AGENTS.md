@@ -93,12 +93,21 @@
 4. 调用 `get_email_alias` API 验证连通性。
 5. 如果邮件通道暂时不可用，告知用户可以先使用 CLI/Chat 模式进行教练对话，邮件通道可以后续再配。
 
-**第四步：验证外部工具（可选）**
+**第四步：配置滴答清单 MCP（可选）**
 
 1. 询问用户是否使用滴答清单（Dida/TickTick）。
-2. 如果使用，检查滴答 MCP 是否可用。
-3. 读取 `integrations/dida-mcp.md` 了解集成规范。
-4. 如果滴答不可用，告知用户：待办事项会先记录在本地 Markdown 文件中，滴答接入后可以同步。
+2. 如果使用：
+   a. 读取 `integrations/dida-mcp.md` 了解完整的集成规范。
+   b. 引导用户获取 API Token：
+      - 登录 https://dida365.com → 设置 → 开发者/API → 创建 Token
+      - 中国区用户用 `dida365.com`，国际区用户用 `ticktick.com`
+   c. 帮助用户在 AI 工具的 MCP 配置文件中添加滴答 MCP 服务：
+      - **Claude Code**：项目根目录或 `~/.claude/.mcp.json` 中添加 `"dida"` server 配置（command: `npx`, args: `-y @dida365/mcp-server`, env: `DIDA_API_TOKEN`）
+      - **Cursor**：`~/.cursor/mcp.json` 中同上配置
+      - **其他工具**：参照 `integrations/dida-mcp.md` 附录 A 的通用配置模板
+   d. 验证连接：尝试调用 `get_today_tasks`，确认返回正常（空列表也算正常）。
+3. 如果滴答不可用（未注册、Token 获取失败、网络问题），告知用户：「待办事项会先记录在本地 Markdown 文件中，滴答接入后可以同步。教练对话的核心能力不依赖滴答，可以随时开始。」
+4. 如果用户不使用滴答，跳过此步骤，待办管理全部走本地 Markdown 文件。
 
 ### 安装完成
 

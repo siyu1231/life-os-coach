@@ -283,3 +283,127 @@ MCP 恢复 ──→ 询问用户是否批量同步本地待同步条目
 - `coach/skills/planning/SKILL.md`：计划 skill 的滴答集成规则和降级策略。
 - `integrations/tools.md`：通用工具适配层原则，滴答 MCP 作为具体实现遵循。
 - `_reference/life-coach/templates/integrations/tools.md`：工具与数据来源模板。
+
+## 附录 A：MCP 服务配置
+
+> 本节为 AI 工具实现者提供滴答清单 MCP 服务的具体配置方法。
+
+### A.1 前置条件
+
+1. 拥有滴答清单账号（https://dida365.com 注册）
+2. 滴答清单支持 MCP 协议的客户端版本（Web/桌面端均可）
+3. 在滴答清单中生成 API Token（用于 MCP 认证）
+
+### A.2 获取 API Token
+
+1. 登录滴答清单网页版 https://dida365.com
+2. 进入「设置」→「开发者」或「API」页面
+3. 创建一个新的 API Token（或 Access Token）
+4. 保存 Token 值（仅创建时可见一次）
+
+### A.3 Claude Code 中的 MCP 配置
+
+在项目根目录或用户目录的 `.mcp.json` 中添加滴答 MCP 服务：
+
+```json
+{
+  "mcpServers": {
+    "dida": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@dida365/mcp-server"
+      ],
+      "env": {
+        "DIDA_API_TOKEN": "<你的 API Token>"
+      }
+    }
+  }
+}
+```
+
+或者使用环境变量方式（推荐，避免 Token 写入配置文件）：
+
+```json
+{
+  "mcpServers": {
+    "dida": {
+      "command": "npx",
+      "args": ["-y", "@dida365/mcp-server"]
+    }
+  }
+}
+```
+
+然后在 shell 配置文件（`.bashrc`、`.zshrc`）或系统环境变量中设置：
+
+```bash
+export DIDA_API_TOKEN="<你的 API Token>"
+```
+
+### A.4 Cursor / Windsurf 中的 MCP 配置
+
+在 `~/.cursor/mcp.json`（Cursor）或 IDE 的 MCP 设置中添加：
+
+```json
+{
+  "mcpServers": {
+    "dida": {
+      "command": "npx",
+      "args": ["-y", "@dida365/mcp-server"],
+      "env": {
+        "DIDA_API_TOKEN": "<你的 API Token>"
+      }
+    }
+  }
+}
+```
+
+### A.5 其他支持 MCP 的 AI 工具
+
+对于任何支持 MCP 协议的工具，配置结构均类似：
+
+| 字段 | 值 |
+|------|-----|
+| Server Name | `dida` |
+| Command | `npx` |
+| Args | `-y`, `@dida365/mcp-server` |
+| 环境变量 | `DIDA_API_TOKEN=<你的 API Token>` |
+
+### A.6 验证配置
+
+配置完成后，验证 MCP 是否正常连接：
+
+1. 重启 AI 工具（使 MCP 配置生效）
+2. 在对话中要求 AI 工具调用滴答 MCP 的 `get_today_tasks` 工具
+3. 如果返回任务列表（即使是空列表），说明连接成功
+4. 如果返回错误，检查：
+   - API Token 是否正确
+   - 网络是否能访问 `dida365.com`
+   - MCP server 包是否能通过 `npx` 下载
+
+### A.7 配置失败时的处理
+
+如果 MCP 配置不成功：
+
+1. 检查 `npx @dida365/mcp-server` 是否能正常运行
+2. 确认使用的滴答清单区域（中国区 `dida365.com` / 国际区 `ticktick.com`），Token 需在对应区域生成
+3. 如仍无法配置，Agent 将使用本地 Markdown 降级模式，待办管理不会中断
+
+### A.8 MCP Server 可用的 Tools 列表
+
+配置成功后，滴答 MCP 通常暴露以下 tools：
+
+| Tool 名称 | 功能 | 关键参数 |
+|-----------|------|---------|
+| `get_today_tasks` | 获取今日待办 | 无 |
+| `get_all_tasks` | 获取全部任务 | `project_id`（可选）, `filter`（可选） |
+| `get_projects` | 获取项目列表 | 无 |
+| `create_task` | 创建任务 | `title`, `due_date`, `priority`, `tags`, `project_id` |
+| `complete_task` | 完成任务 | `task_id` |
+| `uncomplete_task` | 取消完成 | `task_id` |
+| `delete_task` | 删除任务 | `task_id` |
+| `update_task` | 更新任务 | `task_id`, 更新字段 |
+| `get_task` | 获取任务详情 | `task_id` |
+
+具体 tool 名称和参数以实际 MCP 返回的 tool schema 为准。AI 工具在启动时应读取 MCP 的 tool 列表，根据实际 schema 调用。
