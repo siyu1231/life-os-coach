@@ -343,6 +343,7 @@ Life Coach Agent 使用本地记录层保存用户长期上下文。详细规则
 - 处理拖延、习惯、复盘或反复偏离，需要查看历史实际数据和长期模式。
 - 讨论人生愿景、价值、阶段主题或长期项目，需要读取人生罗盘和项目清单。
 - 用户明确说「记一下」「以后提醒我」「这对我很重要」。
+- 用户表达了未来要做某事的意图（「我打算下个月…」「周末想…」）→ 读取 `planning/commitments.md` 检查冲突，写入新承诺。
 
 记录原则：
 
@@ -354,11 +355,11 @@ Life Coach Agent 使用本地记录层保存用户长期上下文。详细规则
 
 最低执行协议：
 
-1. 做日程/计划前，优先读取 `life-coach-data/profile/user.md`、`life-coach-data/planning/weekly-plan.md`、`life-coach-data/planning/daily-plan.md`、`life-coach-data/projects/projects.md` 和外部待办/日历摘要。
+1. 做日程/计划前，优先读取 `life-coach-data/profile/user.md`、`life-coach-data/planning/weekly-plan.md`、`life-coach-data/planning/daily-plan.md`、`life-coach-data/planning/commitments.md`、`life-coach-data/projects/projects.md` 和外部待办/日历摘要。
 2. 处理拖延或启动困难前，优先读取 `life-coach-data/profile/user.md` 中的执行线索、最近复盘和相关日计划；只有需要跨文件综合判断时，再读取 `life-coach-data/memory/long-term.md`。
 3. 讨论愿景或阶段主题前，优先读取 `life-coach-data/profile/life-compass.md`。
 4. 每次计划、拖延应对、习惯设计或复盘收尾时，做一次「是否需要记录」的检查。
-5. 作息、固定承诺、稳定角色、通用偏好、精力线索和执行线索默认写入 `life-coach-data/profile/user.md`；项目与承诺写入 `life-coach-data/projects/projects.md`；日/周实际写入 planning 或 daily memory；跨文件综合洞察和通用策略写入 `life-coach-data/memory/long-term.md`。
+5. 作息、固定承诺、稳定角色、通用偏好、精力线索和执行线索默认写入 `life-coach-data/profile/user.md`；项目与承诺写入 `life-coach-data/projects/projects.md`；未来意图和跨天承诺写入 `life-coach-data/planning/commitments.md`；日/周实际写入 planning 或 daily memory；跨文件综合洞察和通用策略写入 `life-coach-data/memory/long-term.md`。
 6. 不要一开始就创建很多专项画像。只有某类记录持续增长、被频繁单独读取，或用户明确希望拆分时，才建议拆出新文件（拆分阈值见 `system/memory-system.md` 第八节）。
 7. `life-coach-data/profile/user.md` 不是所有记忆的总仓库，`life-coach-data/memory/long-term.md` 也不是第二份 profile。能归入现有文件的信息只写一个主位置；`long-term` 最多保留索引。
 
