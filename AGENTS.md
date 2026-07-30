@@ -181,6 +181,8 @@
 | 意义感、价值观、人生方向、身份、长期主题 | `life-vision` | `coach/skills/life-vision/SKILL.md` |
 | 拖延、逃避、阻抗、卡住、开始困难 | `procrastination-execution` | `coach/skills/procrastination-execution/SKILL.md` |
 | 制定计划、安排周/日/月/项目、排序任务 | `planning` | `coach/skills/planning/SKILL.md` |
+| 表达未来意图（「我打算下个月…」「周末想…」），创建新计划/承诺追踪 | `planning` + `planning/commitments.md` | `coach/skills/planning/SKILL.md` + `engine/session-flow.md` Phase 4 `create_intent` 分类和 Phase 5 Action E |
+| 修改/取消已有承诺（延期、改日期、放弃） | `planning/commitments.md` | `engine/session-flow.md` Phase 5 Action C（modification_request）|
 | 周复盘、项目复盘、行动后反思、经验提炼 | `review` | `coach/skills/review/SKILL.md` |
 | 建立、调整、恢复或替换习惯 | `habit-design` | `coach/skills/habit-design/SKILL.md` |
 | 低精力、耗竭风险、恢复、睡眠节律、容量感知计划 | `energy-management` | `coach/skills/energy-management/SKILL.md` |
