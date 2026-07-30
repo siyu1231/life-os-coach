@@ -47,8 +47,7 @@ life-coach-data/
 │   └── life-compass.md
 ├── planning/
 │   ├── weekly-plan.md
-│   ├── daily-plan.md
-│   └── commitments.md
+│   └── daily-plan.md
 ├── projects/
 │   └── projects.md
 ├── habits/
@@ -76,7 +75,6 @@ life-coach-data/
 | `projects/projects.md` | 项目、等待、暂停、以后、已完成或放弃 | 单步任务流水 |
 | `planning/daily-plan.md` | 今日计划、实际记录、偏离和校准 | 长期人格判断 |
 | `planning/weekly-plan.md` | 本周主题、关键成果、容量、周复盘 | 过细的每日流水 |
-| `planning/commitments.md` | 跨天未来承诺和意图、提醒日期、前置检查 | 当天的具体任务、已完成承诺的历史 |
 | `reviews/review-log.md` | 周/月/项目复盘，记录偏离、有效策略、下一轮调整 | 直接替代长期画像 |
 | `memory/daily/YYYY-MM-DD.md` | 当天原始事实、状态、行动、候选洞察 | 长期结论 |
 | `memory/long-term.md` | 跨文件综合洞察、通用策略、索引 | 第二份用户画像 |
