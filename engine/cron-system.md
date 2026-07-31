@@ -546,28 +546,47 @@ Claude Code 支持通过 `/loop` 命令或 `settings.json` 中的 hooks 配置�
 # 伪代码：每个 Cron 触发的处理函数结构
 def on_cron_trigger(time_slot: str, config: dict):
     if not config.get("cron.enabled", True):
-        return  # 全局开关关闭
-
-    today = get_today_string()  # "YYYY-MM-DD"
-    day_type = get_day_type(today)  # 调用 timor.tech 降级链路
-
-    # 日间节点：仅工作日执行
-    if time_slot in ["morning", "mid_morning", "after_lunch", "mid_afternoon", "pre_wrap", "evening_wrap"]:
-        if day_type == "workday":
-            send_message(time_slot, config)
-        else:
-            log(f"跳过 {time_slot}: 非工作日 ({day_type})")
         return
 
-    # 晚间节点：每日执行，但消息内容根据 day_type 切换
-    if time_slot == "night_review":
-        if day_type in ["weekend", "holiday"]:
-            if not config.get("cron.holiday_night_review", True):
+    today = get_today_string()
+    cal_type = get_day_type(today)  # 日历类型
+    user_rest = check_rest_day_declaration(today)  # 查询 commitments.md
+    mode = determine_mode(cal_type, user_rest)
+
+    # 工作日专属日间节点
+    if time_slot in ["morning", "mid_morning", "after_lunch_workday", "mid_afternoon", "pre_wrap"]:
+        if mode == "workday":
+            send_message(time_slot, config, mode)
+        else:
+            log(f"跳过 {time_slot}: 非工作模式 ({mode})")
+        return
+
+    # 休息日日间节点
+    if time_slot in ["rest_morning", "rest_afternoon"]:
+        if cal_type in ["weekend", "holiday"]:
+            send_message(time_slot, config, mode)
+        else:
+            log(f"跳过 {time_slot}: 非休息日 ({cal_type})")
+        return
+
+    # 共享节点（14:30/17:30/22:30）—— 内容和模式切换在 send_message 内部处理
+    if time_slot in ["after_lunch_shared", "evening_wrap_shared", "night_review"]:
+        if cal_type in ["weekend", "holiday"] and config.get("cron.holiday_night_review", True) == False:
+            if time_slot == "night_review":
                 return
-            send_holiday_night_message(day_type, config)
-        else:
-            send_workday_night_message(config)
+        send_message(time_slot, config, mode)
         return
+
+def determine_mode(cal_type, user_rest):
+    if cal_type == "workday" and not user_rest:
+        return "workday"
+    if cal_type == "workday" and user_rest:
+        return "pure_rest"
+    if cal_type in ("weekend", "holiday") and not user_rest:
+        return "rest_day_default"
+    if cal_type in ("weekend", "holiday") and user_rest:
+        return "pure_rest"
+    return "workday"  # unknown 降级
 ```
 
 ### 发送后动态 Timer 实现说明
