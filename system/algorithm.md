@@ -160,6 +160,9 @@ LifeOS 的底层世界观：**每个任务都是一次从 Current State（当前
 | `plan_unrealistic` | 计划本身容量超出实际可用时间/精力 | 安排了 8 小时任务但只有 4 小时可用窗口 |
 | `context_shift` | 外部环境变化导致原计划不再适用 | 突发会议、紧急事务、身体不适 |
 | `no_plan` | 该时段有计划但用户未制定 | 周计划为空，日计划未填写 |
+| `commitment_overdue` | 承诺或长期目标 step 已过期或即将到期 | commitments.md 中目标日期在今天或之前的 pending 项 |
+| `rest_day_override` | 用户声明了工作日为纯休息（请年假等），原工作日计划需调整 | 当天有 rest_day 声明且当日 mode 为 pure_rest |
+| `rest_day_step_available` | 休息日默认模式下有今日到期或「每日」step 可推进 | commitments.md 中目标日期 == today 或 == "每日" 的 step |
 
 3. **提取状态信号**：从差距中提取影响后续决策的信号：
 
