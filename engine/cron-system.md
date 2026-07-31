@@ -210,7 +210,7 @@ function getDayType(date):
 每个 Cron 节点触发时，先判定最终模式：
 
 ```text
-1. cal_type = getDayType(today)   // 日历类型：workday / weekend / holiday / makeup / unknown
+1. cal_type = getDayType(today)   // 日历类型：workday / weekend / holiday / unknown（API 返回 "workday" 时包含调休补班日）
 2. user_rest = 查询 commitments.md：
    - 目标日期 == today AND 类型 == "rest_day" AND 状态 == "pending"
 3. 最终模式判定：
