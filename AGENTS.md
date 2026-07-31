@@ -146,6 +146,8 @@
 | 配置/修改 Cron 定时 | `engine/cron-system.md` | 用户想调整触达时间、频率、风格；或首次安装时 |
 | 配置/修改邮件收发 | `engine/email-protocol.md` | 用户想设置邮件通道、修改邮件模板、调整轮询频率 |
 | 理解消息收发流程 | `engine/session-flow.md` | 需要了解 Agent 如何采集上下文、发送消息、接收回复、分类理解、执行动作、闭环归档 |
+| 用户表达了全天休息/外出/请假意图 | `engine/session-flow.md`（`rest_day_declaration` 分类，Phase 5 Action E 写入 commitments.md） | 需要识别休息日/外出/请假声明，读取 `templates/planning/commitments.md`（类型=rest_day） |
+| Cron 触发时需判断今日模式 | `engine/cron-system.md` 非工作日模式章节 + `engine/session-flow.md` Phase 1 Step 3（`determine_mode()`） | 每次 Cron 触发 Phase 1 Step 2→3，需将 `mode` 写入 session_context 时 |
 
 **引擎感知原则**：当用户提出「帮我配置每天早上的问候」或「我想用邮件接收教练消息」时，AI 应首先意识到：这需要读取 engine 层的规则文件来理解系统的运行方式，而不是直接开始写代码或做教练对话。
 
