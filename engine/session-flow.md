@@ -892,14 +892,14 @@ log("会话闭环完成", session_id)
 3. 本次会话标记为 `send_failed`，进入 Phase 6 闭环。
 4. 如果连续 3 个 Cron 时间点均发送失败（累计），暂停后续 Cron 触达，记录 ERROR 级别日志，并尝试通过备用通道（如 IM）通知用户「邮件触达异常」。
 
-### 节假日跳过
+### 非工作日模式切换
 
-**场景**：Cron 触发日间节点时，`getDayType()` 返回 `weekend` 或 `holiday`。
+**场景**：Cron 触发日间节点时，`mode`（最终模式）非 `workday`。
 
 **处理**：
-1. Phase 1 判断为假期，直接进入 Phase 6 闭环（标记 `skipped_reason=holiday`）。
-2. 不发送任何日间消息。
-3. 晚间 22:30 节点照常执行（使用休息日轻量消息模板），除非 `cron.holiday_night_review` 为 `false`。
+1. Phase 1 判定为 `rest_day_default` 或 `pure_rest` 时，工作日专属节点跳过（标记 `skipped_reason=rest_day` 或 `skipped_reason=pure_rest`），共享节点照常执行。
+2. 休息日节点（10:00/14:30/17:30）根据 mode 选择对应模板。
+3. 晚间 22:30 节点照常执行（三种模式的消息模板不同）。
 4. 连续假日抑制规则见 `engine/cron-system.md` 的「假期连续提醒抑制」章节。
 
 ### API 降级时的工作日判断不确定
