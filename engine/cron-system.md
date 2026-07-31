@@ -465,10 +465,10 @@ Claude Code 支持通过 `/loop` 命令或 `settings.json` 中的 hooks 配置�
 /loop 30 9 * * 1-5 早安问候——检查今天是否是工作日，如果是则发送今日计划引导。
 /loop 30 10 * * 1-5 上午状态检查。
 /loop 0 10 * * * 休息日晨间启动——检查今天是否是休息日，如果是则发送晨间启动（若命中 rest_day 声明则切换为纯休息模式）。
-/loop 30 14 * * 1-5 午后启动引导。
+/loop 30 14 * * * 午后启动引导。
 /loop 30 15 * * 1-5 下午中段检查。
 /loop 30 16 * * 1-5 收尾预备。
-/loop 30 17 * * 1-5 日终收尾。
+/loop 30 17 * * * 日终收尾。
 /loop 30 22 * * * 晚间复盘（含休息日轻量版）。
 ```
 
@@ -496,7 +496,7 @@ Claude Code 支持通过 `/loop` 命令或 `settings.json` 中的 hooks 配置�
         "description": "10:00 休息日晨间启动"
       },
       {
-        "schedule": "30 14 * * 1-5",
+        "schedule": "30 14 * * *",
         "command": "echo 'after_lunch_start'",
         "description": "14:30 午后启动"
       },
@@ -511,7 +511,7 @@ Claude Code 支持通过 `/loop` 命令或 `settings.json` 中的 hooks 配置�
         "description": "16:30 收尾预备"
       },
       {
-        "schedule": "30 17 * * 1-5",
+        "schedule": "30 17 * * *",
         "command": "echo 'evening_wrap'",
         "description": "17:30 日终收尾"
       },
