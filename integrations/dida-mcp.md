@@ -169,9 +169,9 @@ Agent 通过滴答 MCP 暴露的能力进行操作。每项能力对应一个 MC
 
 | 用户需求 | MCP 调用 | 输入参数 | 返回数据 | 本地降级路径 |
 |---------|---------|---------|---------|------------|
-| 查看今日待办 | `get_today_tasks` | 无（按当前日期） | `[{id, title, due_date, priority, tags, project_id, completed_time}]` | 读取 `coach/data/daily-plan.md` |
-| 查看所有任务 | `get_all_tasks` | `project_id`（可选）、`filter`（可选） | `[{id, title, ...}]` | 读取 `coach/data/projects.md` + `coach/data/daily-plan.md` |
-| 查看项目列表 | `get_projects` | 无 | `[{id, name, color, task_count}]` | 读取 `coach/data/projects.md` |
+| 查看今日待办 | `get_today_tasks` | 无（按当前日期） | `[{id, title, due_date, priority, tags, project_id, completed_time}]` | 读取 `life-coach-data/planning/daily-plan.md` |
+| 查看所有任务 | `get_all_tasks` | `project_id`（可选）、`filter`（可选） | `[{id, title, ...}]` | 读取 `life-coach-data/projects/projects.md` + `life-coach-data/planning/daily-plan.md` |
+| 查看项目列表 | `get_projects` | 无 | `[{id, name, color, task_count}]` | 读取 `life-coach-data/projects/projects.md` |
 | 创建任务 | `create_task` | `title`、`due_date`（可选）、`priority`（可选）、`tags`（可选）、`project_id`（可选） | `{id, title, ...}` | 写入本地 Markdown 并标记 `[待同步到滴答]` |
 | 完成任务 | `complete_task` | `task_id` | `{success: true, completed_time}` | 本地 Markdown 标注 `[已完成-待同步]` |
 | 取消完成任务 | `uncomplete_task` | `task_id` | `{success: true}` | 本地 Markdown 移除完成标记 |
@@ -273,7 +273,7 @@ MCP 恢复 ──→ 询问用户是否批量同步本地待同步条目
 
 1. **读取时**：MCP 可用 → 从滴答读取，不校验本地文件。MCP 不可用 → 从本地 Markdown 读取，标注 `[滴答离线]`。
 2. **写入时**：MCP 可用 → 只写滴答，不同时写入本地 Markdown。MCP 不可用 → 只写本地 Markdown，标注 `[待同步到滴答]`。
-3. **计划文件**：`coach/data/daily-plan.md` 只记录「当日计划做什么」的意图和上下文，不复制滴答的任务状态。计划文件可以引用滴答任务（`滴答: "任务标题"`），但不维护该任务的完成进度。
+3. **计划文件**：`life-coach-data/planning/daily-plan.md` 只记录「当日计划做什么」的意图和上下文，不复制滴答的任务状态。计划文件可以引用滴答任务（`滴答: "任务标题"`），但不维护该任务的完成进度。
 
 ### 例外
 
@@ -387,7 +387,7 @@ MCP 恢复 ──→ 询问用户是否批量同步本地待同步条目
 
 将用户确认的任务信息写入本地 Markdown：
 
-  文件：coach/data/daily-plan.md
+  文件：life-coach-data/planning/daily-plan.md
   条目：
   - [ ] 完成项目 Q3 报告 [待同步到滴答]（截止: 2026-08-05，优先级: 高）
 

@@ -475,7 +475,4 @@ grep -c "滴答\|dida" system/isa-system.md
 ## References
 
 - `system/algorithm.md`：执行循环，ISA 在 GAP 和 VERIFY 阶段的标准来源。
-- `system/memory-system.md`：记忆读写规则，ISA 的存放、生命周期和归档规则。
-- `integrations/dida-mcp.md`：滴答清单 MCP 集成，ISA Claims 映射到滴答子任务和 `api_query` 验证方式的实现。
-- `engine/session-flow.md`：会话状态机，ISA 在 Phase 5（行动）和 Phase 6（闭环）中的使用。
-- `_reference/life-coach/references/memory-system.md`：本地记忆系统参考，ISA 在长期记忆中定位的背景知识。
+- `system/memory-system.md`：记忆读写规则，ISA 的存放、生命周期和归档规则；ISA 在长期记忆中定位的背景知识。

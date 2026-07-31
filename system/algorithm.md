@@ -255,7 +255,7 @@ LifeOS 的底层世界观：**每个任务都是一次从 Current State（当前
 
 #### 4.2 Coach 介入（coach_intervention）
 
-- 调用对应 coach skill 的方法论（参考 `_reference/life-coach/skills/` 下的 SKILL.md 和 references/）。
+- 调用对应 coach skill 的方法论（参考 `coach/skills/` 下的 SKILL.md 和 references/）。
 - 在邮件回复中给出 coach 引导（遵循「一封邮件一个问题」原则，见 `engine/email-protocol.md`）。
 - 不试图在单封邮件中完成整个 coaching process——仅给用户一个入口。
 
@@ -267,7 +267,7 @@ LifeOS 的底层世界观：**每个任务都是一次从 Current State（当前
 
 #### 4.4 情绪支持（emotional_support）
 
-- 使用 `_reference/life-coach/references/coaching-process.md` 的情绪承接方法。
+- 使用 `coach/coaching-process.md` 的情绪承接方法。
 - 遵循 session-flow Phase 5 Action B 的约束：先映照、正常化、降低期望、不催促。
 - 不将情绪信号直接写入 `profile/user.md`（需用户确认）。
 
@@ -568,6 +568,6 @@ grep -c "session-flow\|cron-system\|email-protocol" system/algorithm.md
 - `system/isa-system.md`：ISA 格式定义，algorithm 的 GAP 和 VERIFY 的标准来源。
 - `system/memory-system.md`：记忆读写规则，algorithm 的 CHECK 和 LEARN 的读写依据。
 - `integrations/dida-mcp.md`：滴答清单 MCP 集成，algorithm 的 CHECK 和 ACT 的外部工具。
-- `_reference/life-coach/references/coaching-process.md`：教练流程，algorithm 中情绪承接的参考方法论。
-- `_reference/life-coach/references/act-core.md`：ACT 底层操作参考，algorithm 中「最小下一步」和「失败数据也有用」的理论基础。
-- `_reference/life-coach/references/memory-system.md`：本地记忆系统参考，algorithm 中记忆读写规则的背景知识。
+- `coach/coaching-process.md`：教练流程，algorithm 中情绪承接的参考方法论。
+- `coach/act-core.md`：ACT 底层操作参考，algorithm 中「最小下一步」和「失败数据也有用」的理论基础。
+- `system/memory-system.md`：记忆读写规则，algorithm 中记忆读写规则的背景知识。

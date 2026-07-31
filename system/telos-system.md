@@ -24,7 +24,7 @@ TELOS 不是一次性的使命宣言，而是一个**随生活阶段不断校准
 **TELOS**（源自希腊语 τέλος，意为「目的」「终点」「终极方向」）在 Life Coach Agent 语境中，是一个融合了 LifeOS TELOS 理念和 life-coach 价值观罗盘的方向管理系统：
 
 - **来自 LifeOS TELOS**：核心世界观「每个任务都是一次从 Current State 向 Ideal State 的爬山运动」（见 `system/algorithm.md` 第 1.1 节）。TELOS 将这一理念从任务层面扩展到整个人生层面。
-- **来自 life-coach 价值观罗盘**：价值观是罗盘，不是终点（见 `_reference/life-coach/skills/life-vision/references/value-compass.md`）。TELOS 既包含方向（理想状态），也包含起点（当前状态），以及在这段路上「哪些事值得做、哪些事先放下」。
+- **来自 life-coach 价值观罗盘**：价值观是罗盘，不是终点（见 `coach/skills/life-vision/references/value-compass.md`）。TELOS 既包含方向（理想状态），也包含起点（当前状态），以及在这段路上「哪些事值得做、哪些事先放下」。
 
 ### 1.2 核心理念
 
@@ -395,7 +395,7 @@ life-vision 对话
 
 ### 7.3 在对话中如何使用 TELOS
 
-**life-vision 技能的工作流程**（见 `_reference/life-coach/skills/life-vision/SKILL.md` 第 4 步）提到：「必要时使用人生 8+1 平衡轮，分领域查看愿景、当前状态和阶段主题。」在实现时：
+**life-vision 技能的工作流程**（见 `coach/skills/life-vision/SKILL.md` 第 4 步）提到：「必要时使用人生 8+1 平衡轮，分领域查看愿景、当前状态和阶段主题。」在实现时：
 
 - life-vision 在对话过程中读取 `profile/life-compass.md`（TELOS 的存储位置），获取用户当前各领域的「当前状态」和「理想状态」，作为对话的背景信息。
 - life-vision 的对话结论（澄清后的方向、新发现的价值、阶段主题调整），通过 TELOS 系统写入 `life-compass.md`。
@@ -498,5 +498,5 @@ grep -c "life-vision\|对话澄清\|结构化存储" system/telos-system.md
 - `system/algorithm.md`：执行循环——TELOS 的「当前状态 → 理想状态」理念派生自 algorithm 的 Current → Ideal 爬山模型（第 1.1 节）。
 - `system/isa-system.md`：ISA 格式定义——TELOS 领域方向的具体化桥梁（第六节详述）。
 - `system/memory-system.md`：记忆系统——TELOS 更新时遵循 Tier 写入规则（Tier A 用于当前状态更新，Tier C 用于理想状态和阶段主题变更）。
-- `_reference/life-coach/skills/life-vision/SKILL.md`：life-vision 技能——TELOS 的对话澄清伙伴（第七节详述分工）。
-- `_reference/life-coach/skills/life-vision/references/value-compass.md`：价值观罗盘——TELOS 中「理想状态」方向性的理论基础。
+- `coach/skills/life-vision/SKILL.md`：life-vision 技能——TELOS 的对话澄清伙伴（第七节详述分工）。
+- `coach/skills/life-vision/references/value-compass.md`：价值观罗盘——TELOS 中「理想状态」方向性的理论基础。

@@ -3,13 +3,13 @@ skill: planning
 triggers:
   - type: cron
     name: daily-startup
-    schedule: "每个工作日 08:00"
+    schedule: "每个工作日 09:30"
   - type: user_request
     name: plan-modification
     signal: "用户主动要求调整计划"
   - type: cron
     name: end-of-day-unfinished
-    schedule: "每个工作日 21:00"
+    schedule: "每个工作日 17:30"
 ---
 
 # 邮件触发信号
@@ -18,7 +18,7 @@ triggers:
 
 ## 1. 每日启动信号（daily-startup）
 
-**触发时机**：每个工作日 08:00 定时发送。
+**触发时机**：每个工作日 09:30 定时发送。
 
 **目的**：帮助用户以最小认知负荷开始新的一天——明确今天最重要的事，而不是被待办淹没问题。
 
@@ -103,7 +103,7 @@ triggers:
 
 ## 3. 收尾未完成项处置信号（end-of-day-unfinished）
 
-**触发时机**：每个工作日 21:00，检测到当日计划中有未完成的任务项。
+**触发时机**：每个工作日 17:30，检测到当日计划中有未完成的任务项。
 
 **目的**：帮助用户在一天结束时对未完成项做出决定——推至明天、降级为可选、或主动放弃——避免累积心理负担。
 

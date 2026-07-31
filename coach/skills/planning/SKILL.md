@@ -56,12 +56,11 @@ mail-trigger: true
 
 ### 降级：本地 Markdown
 
-当滴答 MCP 不可用时，使用 `coach/data/` 下的本地 Markdown 文件作为任务存储：
+当滴答 MCP 不可用时，使用 `life-coach-data/planning/` 和 `life-coach-data/projects/` 下的本地 Markdown 文件作为任务存储：
 
-- 日计划：`coach/data/daily-plan.md`
-- 周计划：`coach/data/weekly-plan.md`
-- 项目文件：`coach/data/projects.md`
-- 例行事项：`coach/data/routines.md`
+- 日计划：`life-coach-data/planning/daily-plan.md`
+- 周计划：`life-coach-data/planning/weekly-plan.md`
+- 项目文件：`life-coach-data/projects/projects.md`
 
 降级时在文件中明确标注 `[滴答离线]`，待恢复后同步。
 

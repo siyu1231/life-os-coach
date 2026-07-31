@@ -563,9 +563,9 @@ Phase 4 分类完成后进入。
 
 ### 职责
 
-行动阶段的职责是**根据用户回复的五种分类，分别执行对应的 Action 策略**。每个策略包含三个核心要素：承接方式、操作动作、是否回复用户。
+行动阶段的职责是**根据用户回复的六种分类，分别执行对应的 Action 策略**。`rest_day_declaration` 分类由 Action E 第 5 子项承接（写入 commitments.md 并切换 Cron 模式），不需要独立 Action 策略。每个策略包含三个核心要素：承接方式、操作动作、是否回复用户。
 
-### 五种分类的 Action 策略
+### 六种分类的 Action 策略
 
 #### Action A: 纯状态更新（status_update）
 
@@ -594,7 +594,7 @@ Phase 4 分类完成后进入。
 **目标**：承接情绪，降低羞耻，不急于解决。
 
 **承接方式**：
-- 先映照情绪，而非直接给解决方案。使用「接住情绪与映照处境」的方法（参考 `_reference/life-coach/references/coaching-process.md` 的第二步）。
+- 先映照情绪，而非直接给解决方案。使用「接住情绪与映照处境」的方法（参考 `coach/coaching-process.md` 的第二步）。
 - 正常化用户的感受（如「下午效率低是精力曲线的自然波动」）。
 - 不评价（不说「你今天只完成了这个？」）。
 - 如果用户表达了较强的疲惫/挫败，主动降低期望：「今天不用再推进什么，先照顾好自己。」
@@ -672,7 +672,7 @@ Phase 4 分类完成后进入。
 
 **操作动作**：
 1. 将用户的问题和关键上下文记录到 `memory/daily/{today}.md`。
-2. 检索相关参考资源（`_reference/life-coach/skills/` 下的对应 skill 的 cases 和 toolkit），获取类似问题的处理框架。
+2. 检索相关参考资源（`coach/skills/` 下的对应 skill 的 cases 和 toolkit），获取类似问题的处理框架。
 3. 根据问题复杂度判断：
    - **轻量问题**（可在 200 字内给出有意义的引导）：在回复邮件中直接给出 2-3 个思考方向或一个可选框架。
    - **中等问题**（需要稍多展开）：在回复中给出 1 个核心思路，邀请用户在下一个时间点深入讨论。
@@ -782,6 +782,7 @@ Phase 4 分类完成后进入。
 | C: modification_request | 是 | 2. 触达（发送回复后 → 3.接收） |
 | D: deep_question | 是 | 2. 触达（发送回复后 → 3.接收） |
 | E: create_intent | 是 | 2. 触达（发送回复后 → 3.接收） |
+| F: rest_day_declaration | 是（见 Action E 子项 5） | 2. 触达（发送回复后 → 3.接收） |
 
 **注意**：回到 Phase 2（触达）发送回复后，会话会再次进入 Phase 3（接收）等待用户二次回复。但会话生命周期不变（仍从首次 `session_started_at` 算起），且同一会话内**最多允许一次回环**（即发送回复后如果用户二次回复，优先开启新会话处理）。
 
@@ -790,7 +791,7 @@ Phase 4 分类完成后进入。
 | 条件 | 下一阶段 |
 |------|---------|
 | 无需回复用户（Action A） | 6. 闭环 |
-| 需要回复且已发送（Action B/C/D） | 3. 接收（设置一次后续回复处理机会）或 6. 闭环（如果在 30min 超时窗口内） |
+| 需要回复且已发送（Action B/C/D/E/F） | 3. 接收（设置一次后续回复处理机会）或 6. 闭环（如果在 30min 超时窗口内） |
 
 ## Phase 6: 闭环（Close）
 
@@ -1061,10 +1062,10 @@ grep -c "无回复\|发送失败\|节假日\|边界情况" engine/session-flow.m
 ### 分类体系覆盖检查
 
 ```bash
-grep -c "status_update\|emotional_signal\|modification_request\|deep_question\|create_intent" engine/session-flow.md
+grep -c "status_update\|emotional_signal\|modification_request\|deep_question\|create_intent\|rest_day_declaration" engine/session-flow.md
 ```
 
-预期：至少匹配 5（五种分类各自出现）。
+预期：至少匹配 6（六种分类各自出现）。
 
 ## References
 
@@ -1072,5 +1073,4 @@ grep -c "status_update\|emotional_signal\|modification_request\|deep_question\|c
 - `engine/email-protocol.md`：邮件收发协议，session-flow 的消息通道和模板变量来源。
 - `system/algorithm.md`：Agent 执行循环和推理框架，session-flow 状态机是其实例化。
 - `system/memory-system.md`：记忆读写规则和维护周期，session-flow 在 Phase 1 和 Phase 6 中读写。
-- `_reference/life-coach/references/coaching-process.md`：教练流程参考，Phase 5 emotional_signal 的情绪承接方法来源。
-- `_reference/life-coach/references/memory-system.md`：本地记忆系统参考，Phase 6 写入规则的背景知识。
+- `coach/coaching-process.md`：教练流程参考，Phase 5 emotional_signal 的情绪承接方法来源。
