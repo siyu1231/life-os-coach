@@ -22,7 +22,8 @@
 | `session_id` | string | 系统生成 | 本次会话的唯一标识，格式 `YYYY-MM-DD-HHmm-{cron_slot}` |
 | `cron_slot` | string | Cron 系统 | 触发本次会话的 Cron 时间点标签，如 `morning`、`mid_morning`、`night_review` |
 | `channel` | string | 配置 | 消息通道类型：`email`、`im` |
-| `day_type` | string | `getDayType()` | 当日类型：`workday`、`weekend`、`holiday` |
+| `day_type` | string | `getDayType()` | 当日日历类型：`workday`、`weekend`、`holiday` |
+| `mode` | string | `determine_mode()` | 最终 Cron 模式：`workday`、`rest_day_default`、`pure_rest` |
 | `phase` | enum | 状态机 | 当前所处阶段 |
 | `phase_started_at` | timestamp | 系统时钟 | 进入当前阶段的时间戳 |
 | `session_started_at` | timestamp | 系统时钟 | 会话创建时间戳（用于 30 分钟超时判断） |
@@ -104,17 +105,28 @@ if config.get("cron.enabled") is false:
 
 获取 `day_type`：`workday` / `weekend` / `holiday` / `unknown`。
 
-#### Step 3: 日间节点假期跳过
+#### Step 3: 日间节点模式判定
 
-| `day_type` | Cron 槽位类型 | 行为 |
-|------------|-------------|------|
-| `workday` | 任意 | 正常执行，继续后续步骤 |
-| `weekend` / `holiday` | 日间节点（09:30-17:30） | 跳过：标记 `phase=skipped_reason=holiday`，直接进入 6.闭环 |
-| `weekend` / `holiday` | 晚间节点（22:30） | 正常执行，但使用休息日轻量消息模板 |
-| `weekend` / `holiday` | 晚间节点（22:30）且 `cron.holiday_night_review` 为 `false` | 跳过 |
-| `unknown` | 任意 | 降级按工作日处理（宁可多触达不可漏触达），但记录 warning 日志 |
+根据 `mode`（最终模式，由 `getDayType()` 和 `commitments.md` 中 rest_day 声明共同裁决）决定节点行为。
 
-**连续假日抑制**：当连续 N 天（N >= 2）处于 `weekend` 或 `holiday` 时，第 2 天起的 22:30 仅发送极简问候（见 `engine/cron-system.md` 的「假期连续提醒抑制」章节）。假期结束后的第一个工作日 09:30 切换为假期回归版问候。
+| `mode` | Cron 槽位类型 | 行为 |
+|--------|-------------|------|
+| `workday` | 任意 | 正常执行，使用工作日消息模板 |
+| `rest_day_default` | 休息日节点（10:00/14:30/17:30） | 正常执行，使用休息日默认消息模板（基于 commitments 提醒） |
+| `rest_day_default` | 工作日专属节点（09:30/10:30/15:30/16:30） | 跳过：标记 `phase=skipped_reason=rest_day`，进入 6.闭环 |
+| `pure_rest` | 任意休息日节点 | 正常执行，使用纯休息消息模板（仅日程事件，不追任务） |
+| `pure_rest` | 工作日专属节点 | 跳过：标记 `phase=skipped_reason=pure_rest`，进入 6.闭环 |
+| `workday`（mode 降级） | 任意 | 降级按工作日处理（宁可多触达不可漏触达），但记录 warning 日志 |
+
+**模式判定在 Phase 1 Step 2 之后执行：**
+
+```text
+1. cal_type = getDayType(today)
+2. user_rest = 读取 commitments.md：
+   筛选：目标日期 == today AND 类型 == "rest_day" AND 状态 == "pending"
+3. mode = determine_mode(cal_type, user_rest)
+4. 将 mode 写入 session_context.mode
+```
 
 #### Step 4: 收集用户上下文
 
@@ -126,7 +138,7 @@ if config.get("cron.enabled") is false:
 | `memory/long-term.md` | 跨文件综合洞察和索引 | 按需读取 |
 | `memory/daily/{today}.md` | 当日已有记录 | 按需读取 |
 | `memory/daily/{yesterday}.md` | 昨日状态和行动 | 按需读取（用于连贯性上下文） |
-| `planning/commitments.md` | 跨天承诺追踪：未来意图、目标日期、前置检查 | 按需读取（检查今日到期的承诺和前置提醒） |
+| `planning/commitments.md` | 跨天承诺追踪：未来意图、目标日期、前置检查 | 按需读取。**休息日节点**：额外筛选 rest_day 声明、目标日期 == "每日" 的 step、未来 7 天到期的里程碑 |
 | 外部日历 API | 今日日程摘要 | 按需读取 |
 | 外部待办 API | 今日待办概览 | 按需读取 |
 | 天气 API | 当日天气 | 仅早安问候节点读取 |
@@ -138,6 +150,9 @@ if config.get("cron.enabled") is false:
 - **日终收尾（17:30）**：读取 `user.md`、今日 `memory/daily/*.md`、`commitments.md`（检查今日完成情况并标记过期的待确认）。
 - **晚间复盘（22:30）**：读取 `user.md`、今日 `memory/daily/*.md`、`commitments.md`（休息日：轻量提示明日到期的承诺；工作日：检查明日承诺的前置条件）。
 - **发送后跟进（+5min/+10min）**：不读取新文件，仅检查 `last_sent_message_id` 之后是否有新用户邮件。
+- **休息日晨间启动（10:00）**：读取 `user.md`、昨日 `memory/daily/*.md`、`commitments.md`（筛选 rest_day 声明 + 今日到期 step + 每日 step + 未来 7 天里程碑）。不读取天气和日历（休息日不需要）。
+- **休息日午后跟进（14:30）**：读取 `user.md`、今日 `memory/daily/*.md`、10:00 触达记录（如果有）。
+- **休息日日终收尾（17:30）**：读取 `user.md`、今日 `memory/daily/*.md`、`commitments.md`（检查今日承诺执行状态）。
 
 #### Step 4.5: 检查收件箱（Cron 触发时必做）
 
