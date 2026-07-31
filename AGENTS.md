@@ -360,7 +360,7 @@ Life Coach Agent 使用本地记录层保存用户长期上下文。详细规则
 
 最低执行协议：
 
-1. 做日程/计划前，优先读取 `life-coach-data/profile/user.md`、`life-coach-data/planning/weekly-plan.md`、`life-coach-data/planning/daily-plan.md`、`life-coach-data/planning/commitments.md`、`life-coach-data/projects/projects.md` 和外部待办/日历摘要。
+1. 做日程/计划前，优先读取 `life-coach-data/profile/user.md`、`life-coach-data/planning/weekly-plan.md`、`life-coach-data/planning/daily-plan.md`、`life-coach-data/planning/commitments.md`（含 rest_day 声明和三模式判定）、`life-coach-data/projects/projects.md` 和外部待办/日历摘要。
 2. 处理拖延或启动困难前，优先读取 `life-coach-data/profile/user.md` 中的执行线索、最近复盘和相关日计划；只有需要跨文件综合判断时，再读取 `life-coach-data/memory/long-term.md`。
 3. 讨论愿景或阶段主题前，优先读取 `life-coach-data/profile/life-compass.md`。
 4. 每次计划、拖延应对、习惯设计或复盘收尾时，做一次「是否需要记录」的检查。
