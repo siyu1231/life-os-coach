@@ -207,6 +207,8 @@ LifeOS 的底层世界观：**每个任务都是一次从 Current State（当前
 | `context_shift` | `replan` | 根据新上下文重新安排 |
 | `no_plan` | `planning_assist` | 启动 planning skill 帮助用户制定计划 |
 | `commitment_overdue` | `commitment_followup` | 检查 commitments.md 中已过期或即将到期的承诺，提醒用户确认（延期/取消/完成） |
+| `rest_day_override` | `plan_adjustment` | 工作日被 rest_day 覆盖，将该日的原计划 task 和 commitment 关联起来——询问用户是延期还是取消 |
+| `rest_day_step_available` | `gentle_nudge` | 休息日默认模式，轻量提醒有可推进的 step——不追进度，提供跳过选项 |
 
 2. **优先级排序**：
 
