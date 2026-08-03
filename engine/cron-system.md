@@ -431,6 +431,9 @@ Agent 不创建休息日日计划文件。提醒直接来自 commitments.md 的 
 | `cron.pre_wrap_time` | `16:30` | 收尾预备时间。设为 `""` 可禁用。 | `16:00` / `""` |
 | `cron.evening_wrap_time` | `17:30` | 日终收尾时间。 | `18:00` / `17:00` |
 | `cron.night_review_time` | `23:00` | 晚间复盘时间。 | `22:00` / `23:00` |
+| `cron.evening_block1_time` | `20:00` | 晚间第一块启动时间。设为 `""` 可禁用晚间所有节点。 |
+| `cron.evening_block2_time` | `21:00` | 晚间第二块时间。 |
+| `cron.evening_block3_time` | `22:00` | 晚间第三块时间。 |
 | `cron.followup_5min_enabled` | `true` | 启用发送后+5min 跟进行为。 | `true` / `false` |
 | `cron.followup_10min_enabled` | `true` | 启用发送后+10min 归档行为。 | `true` / `false` |
 | `cron.style` | `warm` | 消息风格。「warm」为温暖陪伴风格，「brief」为简洁要点风格，「challenge」为适度挑战风格。 | `warm` / `brief` / `challenge` |
@@ -451,6 +454,9 @@ Agent 不创建休息日日计划文件。提醒直接来自 commitments.md 的 
 - `cron.pre_wrap_time`: 16:30
 - `cron.evening_wrap_time`: 17:30
 - `cron.night_review_time`: 23:00
+- `cron.evening_block1_time`: 20:00
+- `cron.evening_block2_time`: 21:00
+- `cron.evening_block3_time`: 22:00
 - `cron.followup_5min_enabled`: true
 - `cron.followup_10min_enabled`: true
 - `cron.style`: warm
@@ -483,7 +489,10 @@ Claude Code 支持通过 `/loop` 命令或 `settings.json` 中的 hooks 配置�
 /loop 30 15 * * 1-5 下午中段检查。
 /loop 30 16 * * 1-5 收尾预备。
 /loop 30 17 * * * 日终收尾。
-/loop 30 22 * * * 晚间复盘（含休息日轻量版）。
+/loop 0 20 * * 1-5 晚间第一块启动——检查今天是否是工作日，如果是则发送晚间第一块引导。
+/loop 0 21 * * 1-5 晚间第二块——检查今天是否是工作日，如果是则发送晚间第二块切换检查。
+/loop 0 22 * * 1-5 晚间第三块——检查今天是否是工作日，如果是则发送晚间第三块收束引导。
+/loop 0 23 * * * 晚间复盘（含休息日轻量版）。
 ```
 
 注意：`/loop` 命令在 Claude Code 会话中注册的定时任务依赖 `cron.enabled` 为 `true` 且会话保持活动。适用于 AI 持续在线（例如 webhook 或长期会话）的场景。
@@ -530,9 +539,24 @@ Claude Code 支持通过 `/loop` 命令或 `settings.json` 中的 hooks 配置�
         "description": "17:30 日终收尾"
       },
       {
-        "schedule": "30 22 * * *",
+        "schedule": "0 23 * * *",
         "command": "echo 'night_review'",
         "description": "23:00 晚间复盘"
+      },
+      {
+        "schedule": "0 20 * * 1-5",
+        "command": "echo 'evening_block1'",
+        "description": "20:00 晚间第一块"
+      },
+      {
+        "schedule": "0 21 * * 1-5",
+        "command": "echo 'evening_block2'",
+        "description": "21:00 晚间第二块"
+      },
+      {
+        "schedule": "0 22 * * 1-5",
+        "command": "echo 'evening_block3'",
+        "description": "22:00 晚间第三块"
       }
     ]
   }
@@ -554,7 +578,10 @@ Claude Code 支持通过 `/loop` 命令或 `settings.json` 中的 hooks 配置�
 | 16:30 | `30 16 * * 1-5` | 工作日 16:30 |
 | 17:30 | `30 17 * * *` | 工作日 17:30；**休息日 17:30 也在此触发，内容根据模式切换** |
 | 10:00 | `0 10 * * *` | 休息日晨间启动（每天触发，内部通过 cal_type 检查是否为休息日） |
-| 23:00 | `30 22 * * *` | 每天 23:00 |
+| 20:00 | `0 20 * * 1-5` | 工作日 20:00 晚间第一块 |
+| 21:00 | `0 21 * * 1-5` | 工作日 21:00 晚间第二块 |
+| 22:00 | `0 22 * * 1-5` | 工作日 22:00 晚间第三块 |
+| 23:00 | `0 23 * * *` | 每天 23:00 晚间复盘 |
 
 注意：Cron 表达式中的星期字段 `1-5` 只是粗筛（周一至周五），**每个时间点触发后仍需调用 `getDayType()` 检查是否为法定节假日或调休日**，避免在法定节假日发送日间消息，或漏掉调休补班日。
 
@@ -649,10 +676,10 @@ def archive_if_no_reply_10min(sent_message_id: str):
 运行以下命令确认本文件的调度规则覆盖所有预期时间点：
 
 ```bash
-grep -c "09:30\|10:30\|14:30\|15:30\|16:30\|17:30\|23:00" engine/cron-system.md
+grep -c "09:30\|10:30\|14:30\|15:30\|16:30\|17:30\|20:00\|21:00\|22:00\|23:00" engine/cron-system.md
 ```
 
-预期：至少匹配 7 个时间点。
+预期：至少匹配 10 个时间点。
 
 ### API 参考检查
 
