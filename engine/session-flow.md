@@ -84,7 +84,7 @@
 
 Cron 系统的时间点到达（详见 `engine/cron-system.md` 的时间点定义表），包括两类：
 
-- **Fixed Cron**：09:30、10:30、14:30、15:30、16:30、17:30、22:30 等固定时间点。
+- **Fixed Cron**：09:30、10:30、14:30、15:30、16:30、17:30、20:00、21:00、22:00、23:00 等固定时间点。
 - **Dynamic Timer**：发送后 +5min 和 +10min 的一次性定时器触发。此时跳过采集的直接上下文收集，仅检查用户回复状态。
 
 ### 动作
@@ -116,6 +116,9 @@ if config.get("cron.enabled") is false:
 | `rest_day_default` | 工作日专属节点（09:30/10:30/15:30/16:30） | 跳过：标记 `phase=skipped_reason=rest_day`，进入 6.闭环 |
 | `pure_rest` | 任意休息日节点 | 正常执行，使用纯休息消息模板（仅日程事件，不追任务） |
 | `pure_rest` | 工作日专属节点 | 跳过：标记 `phase=skipped_reason=pure_rest`，进入 6.闭环 |
+| `workday` | 晚间节点（20:00/21:00/22:00） | 正常执行，使用晚间消息模板 |
+| `rest_day_default` | 晚间节点（20:00/21:00/22:00） | 跳过：标记 `phase=skipped_reason=rest_day`，进入 6.闭环 |
+| `pure_rest` | 晚间节点（20:00/21:00/22:00） | 跳过：标记 `phase=skipped_reason=pure_rest`，进入 6.闭环 |
 | `workday`（mode 降级） | 任意 | 降级按工作日处理（宁可多触达不可漏触达），但记录 warning 日志 |
 
 **模式判定在 Phase 1 Step 2 之后执行：**
@@ -148,11 +151,14 @@ if config.get("cron.enabled") is false:
 - **状态检查（10:30/15:30/16:30）**：读取 `user.md`、今日 `memory/daily/*.md`、`commitments.md`（检查当日到期的承诺）。
 - **午后启动（14:30）**：读取 `user.md`、今日 `memory/daily/*.md`、日历（下午时段）、`commitments.md`（检查今日剩余承诺的前置条件）。
 - **日终收尾（17:30）**：读取 `user.md`、今日 `memory/daily/*.md`、`commitments.md`（检查今日完成情况并标记过期的待确认）。
-- **晚间复盘（22:30）**：读取 `user.md`、今日 `memory/daily/*.md`、`commitments.md`（休息日：轻量提示明日到期的承诺；工作日：检查明日承诺的前置条件）。
+- **晚间复盘（23:00）**：读取 `user.md`、今日 `memory/daily/*.md`、`commitments.md`（休息日：轻量提示明日到期的承诺；工作日：检查明日承诺的前置条件）。
 - **发送后跟进（+5min/+10min）**：不读取新文件，仅检查 `last_sent_message_id` 之后是否有新用户邮件。
 - **休息日晨间启动（10:00）**：读取 `user.md`、昨日 `memory/daily/*.md`、`commitments.md`（筛选 rest_day 声明 + 今日到期 step + 每日 step + 未来 7 天里程碑）。不读取天气和日历（休息日不需要）。
 - **休息日午后跟进（14:30）**：读取 `user.md`、今日 `memory/daily/*.md`、10:00 触达记录（如果有）。
 - **休息日日终收尾（17:30）**：读取 `user.md`、今日 `memory/daily/*.md`、`commitments.md`（检查今日承诺执行状态）。
+- **晚间第一块（E1，20:00）**：读取 `user.md`、今日 `memory/daily/*.md`、近 7 天 `memory/daily/*.md`（统计晚间四类覆盖缺口）、`commitments.md`（筛选四类标签的 pending step/goal + 长期目标晚间可执行步骤）、`planning/telos.md`（当前阶段可推进步骤）。不读取天气（晚间不需要）。
+- **晚间第二块（E2，21:00）**：读取 `user.md`、今日 `memory/daily/*.md`（晚间第一块执行记录）、`commitments.md`（检查 E1 填充的默认事项是否被用户调整）。若用户未回 E1，检查 E1 发送后是否有新回复；仍无回复按 E1 填充默认继续。
+- **晚间第三块（E3，22:00）**：读取 `user.md`、今日 `memory/daily/*.md`（晚间第一、二块执行记录）、`commitments.md`（检查前三块覆盖类别，优先补缺口）。
 
 #### Step 4.5: 检查收件箱（Cron 触发时必做）
 
@@ -986,7 +992,7 @@ log("会话闭环完成", session_id)
 1. +5min：发送温和提醒（如果 `cron.followup_5min_enabled` 为 `true`）。
 2. +10min：不再发送消息，标记本次会话为 `waiting_for_reply`，进入 Phase 6 闭环。
 3. 今日后续 Cron 节点：正常触发，但每封触达邮件的内容不追问上一封未回复的邮件。
-4. 如果用户连续 3 个 Cron 时间点未回复（即一天的日间节点全部未回复），当天剩余的日间节点自动静默（不再发送），仅保留晚间 22:30 复盘。
+4. 如果用户连续 3 个 Cron 时间点未回复（即一天的日间节点全部未回复），当天剩余的日间节点自动静默（不再发送），仅保留晚间 23:00 复盘。
 
 **不对用户做负面归因**：不假设用户「不重视」「忘了」「故意不回」。Agent 内部只记录 `waiting_for_reply`，不附加任何评价性标签。
 
@@ -1007,7 +1013,7 @@ log("会话闭环完成", session_id)
 **处理**：
 1. Phase 1 判定为 `rest_day_default` 或 `pure_rest` 时，工作日专属节点跳过（标记 `skipped_reason=rest_day` 或 `skipped_reason=pure_rest`），共享节点照常执行。
 2. 休息日节点（10:00/14:30/17:30）根据 mode 选择对应模板。
-3. 晚间 22:30 节点照常执行（三种模式的消息模板不同）。
+3. 晚间 23:00 节点照常执行（三种模式的消息模板不同）。
 4. 连续假日抑制规则见 `engine/cron-system.md` 的「假期连续提醒抑制」章节。
 
 ### API 降级时的工作日判断不确定
@@ -1053,7 +1059,7 @@ log("会话闭环完成", session_id)
 **处理**：
 1. 第 1 天：所有时间点正常发送。
 2. 第 2 天：仅发送早安问候和晚间复盘，跳过日间状态检查节点。
-3. 第 3 天起：仅发送晚间复盘（22:30），日间全部静默。
+3. 第 3 天起：仅发送晚间复盘（23:00），日间全部静默。
 4. 用户任何时候回复后，立即恢复完整日间调度。
 5. 此行为由 `cron-system.md` 中的「假期连续提醒抑制」逻辑驱动（长期未交互与连续假期的处理策略类似）。
 
