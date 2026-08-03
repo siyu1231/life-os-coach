@@ -114,6 +114,9 @@ LifeOS 的底层世界观：**每个任务都是一次从 Current State（当前
 | Cron 触达（纯休息模式） | `profile/user.md`、`memory/daily/{yesterday}.md`、`planning/commitments.md`（仅筛选 rest_day 声明和日程事件类承诺）、不读取 daily-plan.md |
 | 用户主动回复 | `memory/daily/{today}.md`、上一次会话的 LEARN 记录、`memory/long-term.md`（如需跨日上下文） |
 | 复盘触发 | `planning/weekly-plan.md`、`planning/daily-plan.md`、`reviews/review-log.md`、`projects/projects.md`、近 7 日 `memory/daily/*.md` |
+| E1 晚间节点（20:00） | `profile/user.md`、`planning/commitments.md`（四类标签 pending step/goal）、TELOS 长期目标晚间可执行步骤、滴答清单、习惯追踪、`planning/daily-plan.md`（17:30 收尾结论）、近 7 日 `memory/daily/*.md`（晚间四类覆盖统计） |
+| E2 晚间节点（21:00） | 第一块执行结果（`memory/daily/{today}.md` 晚间段）、E1 填充方案、用户回复文本（用于类别判定） |
+| E3 晚间节点（22:00） | 第一、二块执行结果（`memory/daily/{today}.md` 晚间段）、E2 填充/调整、用户回复文本（用于类别判定） |
 | 深度问题 | `profile/life-compass.md`、`profile/user.md`、`memory/long-term.md`、相关 skill 的 cases 和 toolkit |
 
 读取策略遵循 `system/memory-system.md` 的「启动时读取什么」规则。
@@ -129,6 +132,8 @@ LifeOS 的底层世界观：**每个任务都是一次从 Current State（当前
    - 用户状态：今日已完成事项、今日计划 vs 实际进度、精力线索、情绪信号。
    - 环境上下文：今日日程、待办列表、天气（仅早安节点）。
    - 历史线索：昨日偏离、上次 LEARN 中标记的「待观察」模式。
+5. **拉取候选动作（承诺优先填充）**：从 `planning/commitments.md`（四类标签的 pending step/goal）、昨日复盘未完成项、TELOS 长期目标晚间可执行步骤、滴答清单（今日任务）、习惯缺口（本周未达标习惯）、邮件提取的未安排意图，按优先级拉取候选动作，自动填充计划草案并呈现用户确认（详见 `engine/cron-system.md` 的「承诺优先填充」机制）。
+6. **晚间四类覆盖统计（仅 E1 节点）**：读取近 7 天 `memory/daily/*.md` 的「晚间」段，统计精进/休闲/锻炼/副业四类覆盖次数，标记连续缺失超过 2 天的类别作为覆盖缺口（详见 `engine/cron-system.md` 的「晚间四类覆盖追踪」）。
 
 **输出**：一份结构化的 Current State 摘要。
 
@@ -163,6 +168,8 @@ LifeOS 的底层世界观：**每个任务都是一次从 Current State（当前
 | `commitment_overdue` | 承诺或长期目标 step 已过期或即将到期 | commitments.md 中目标日期在今天或之前的 pending 项 |
 | `rest_day_override` | 用户声明了工作日为纯休息（请年假等），原工作日计划需调整 | 当天有 rest_day 声明且当日 mode 为 pure_rest |
 | `rest_day_step_available` | 休息日默认模式下有今日到期或「每日」step 可推进 | commitments.md 中目标日期 == today 或 == "每日" 的 step |
+| `evening_category_gap` | 近 7 天晚间某类别连续缺失，覆盖失衡 | 晚间四类覆盖统计显示某类连续 2 天及以上未出现 |
+| `task_commitment_detected` | 用户表达了新的任务意图/承诺，但尚未写入待办或安排时间 | 邮件回复匹配「我要/得/准备/打算/应该做 X」「下次/明天/周末 X」等模式 |
 
 3. **提取状态信号**：从差距中提取影响后续决策的信号：
 
@@ -384,6 +391,31 @@ LifeOS 的底层世界观：**每个任务都是一次从 Current State（当前
 - 更新 `system/state/mail-cursor.json`（邮件去重游标，详见 `engine/email-protocol.md`）。
 - 更新 `system/state/message-log.json`（消息日志）。
 - 更新 `processed_mailids` 集合（裁剪超过 500 条时去掉最早的一半）。
+
+#### 6.5 晚间类别判定（复盘时）
+
+晚间块结束后的复盘阶段，按用户回复文本中的关键词自动判定每个晚间块归属类别，并写入当日 `memory/daily/{today}.md` 的「晚间」段，供次日 E1 统计覆盖快照（详见 `engine/cron-system.md` 的「晚间四类覆盖追踪」）。不需要用户手动分类。
+
+| 类别 | 关键词（匹配时忽略大小写） | 示例活动 |
+|------|--------------------------|---------|
+| 精进 | 看、读、学、纪录片、课程、练习、技能、笔记、书 | 读《深度工作》、看纪录片、上线上课 |
+| 休闲 | 刷剧、游戏、休息、放松、躺、随便、电影、综艺、音乐 | 看剧、打游戏、刷手机、发呆 |
+| 锻炼 | 跑、健身、运动、走、跳、游泳、瑜伽、骑行、拉伸 | 跑步 5km、健身房、散步 |
+| 副业 | 副业、项目、赛道、搞钱、研究、产品、方案、客户 | 研究 AI 赛道、搭副业网站 |
+
+写入格式示例：
+
+```markdown
+## 晚间
+- [块1] 20:00-21:00: 看纪录片《XXX》 -> 精进
+- [块2] 21:00-22:00: 刷了两集剧 -> 休闲
+- [块3] 22:00-23:00: 项目方案初稿 -> 副业
+```
+
+判定规则：
+
+- 关键词匹配优先：命中某类别关键词即归入该类别；多个类别关键词同时命中时，按「精进 > 锻炼 > 副业 > 休闲」的优先级归入更具体的一类。
+- 无法判定（用户未回复或文本不含任何关键词）时标记为「未分类」，不计入覆盖统计。
 
 **输出**：Memory Update Record，包含：
 
