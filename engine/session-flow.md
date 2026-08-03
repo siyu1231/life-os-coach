@@ -530,7 +530,7 @@ Phase 3 收到有效用户回复（非特殊指令）后进入。
   "intent_fields": {
     "what": "<用户想做什么（create_intent）或声明了什么（rest_day_declaration）>",
     "when": "<目标日期/时间范围>",
-    "type": "<commitment 类型：plan / goal / rest_day>",
+    "type": "<commitment 类型：plan / goal / task / rest_day>",
     "prerequisite": "<用户提到的前置条件或检查项，如果有>"
   },
   "reasoning": "<归类依据，引用用户原文中的具体表述>"
@@ -810,7 +810,7 @@ Phase 4 分类完成后进入。
 
 #### Action G: 任务承诺（task_commitment）
 
-**目标**：将用户近期轻量任务承诺转化为滴答清单待办，幂等检查避免重复，同时写入 `planning/commitments.md` 作为备份存档。
+**目标**：将用户近期轻量任务承诺转化为滴答清单待办，幂等检查避免重复。遵循「不双写原则」（dida-mcp.md）：MCP 可用时滴答是状态的事实源，MCP 不可用时降级到本地文件。
 
 **承接方式**：
 - 快速确认任务和时间——不展开、不拆解、不追问「要不要做成目标」。
@@ -818,27 +818,36 @@ Phase 4 分类完成后进入。
 
 **操作动作**：
 
-1. **幂等检查**：先在滴答清单中搜索与当前 task_commitment 相似的任务。
+**路径 A：滴答 MCP 可用（正常路径）**
+
+1. **幂等检查（`get_today_tasks`）**：
+   - 调用 `get_today_tasks` 获取今日已有待办列表。
    - 搜索关键词从 `task_commitment` 识别出的「核心名词 + 核心动词」中提取（如「交水电费」→ 搜索「水电费」）。
    - 比较已存在任务的标题和用户原文的相似度（模糊匹配，允许措辞差异）。
-   - 如果找到相似度 > 70% 的已有任务：不创建新任务，回复用户「这条已经记过了哦。{已有任务链接}」。跳过后续创建步骤。
+   - 如果找到相似度 > 70% 的已有任务：不创建新任务，回复用户「这条已经记过了哦。{已有任务标题}」。跳过后续创建步骤。
    - 如果未找到相似任务：继续执行创建步骤。
 
-2. **创建滴答清单任务**：
-   - 将 task_commitment 写入滴答清单（作为待办任务）。
-   - 使用 Phase 4 `task_commitment 匹配模式与自动推断` 中推断出的 `due_date` 和 `priority`。
-   - 任务标题使用用户原文中的核心表述（保留用户的语言习惯）。
-   - 如果 `due_date` 为 `null` 且标记为 `someday`：不设截止日期，归入收集箱。
-   - 如果 `due_date` 为 `null` 且标记为 `this_week`：设截止日期为本周日。
+2. **创建滴答清单任务（`create_task`）**：
+   - 调用 `create_task` 将 task_commitment 写入滴答清单。
+   - 参数：`title`（用户原文核心表述）、`due_date`（推断值或 null）、`priority`（推断值）。
+   - 如果 `due_date` 为 `null` 且标记为 `someday`：不传 `due_date`，任务归入收集箱。
+   - 如果 `due_date` 为 `null` 且标记为 `this_week`：传本周日日期。
+   - 遵循「不双写原则」：MCP 可用时不将任务副本写入本地 `planning/commitments.md`（滴答是事实源）。
 
-3. **写入 `planning/commitments.md` 备份**：
+3. **回复用户确认**：
+   - 必须回复，告知用户已创建滴答清单任务。
+   - 确认内容包含：任务名称、截止日期/清单位置、优先级。
+
+**路径 B：滴答 MCP 不可用（降级路径）**
+
+1. **降级写入本地**：
    - 将 task_commitment 作为一条记录追加到 `planning/commitments.md`。
    - 类型设为 `task`（与 `plan`、`goal`、`rest_day` 区分）。
-   - 填入字段：承诺内容（引用用户原话）、目标日期（即推断的 due_date）、来源对话、优先级、提醒时间留空（填 `-`，滴答清单负责提醒）。
-   - 记录滴答清单任务 ID，用于后续幂等检查和关联。
+   - 填入字段：承诺内容（引用用户原话）、目标日期（即推断的 due_date）、来源对话、优先级、提醒时间留空（填 `-`）。
+   - 在记录末尾标注 `[待同步到滴答]`。
 
-4. **回复用户确认**：
-   - 必须回复，告知用户已创建滴答清单任务。
+2. **回复用户确认**：
+   - 必须回复，告知用户「滴答清单暂时不可用，已帮你记在本地，连接恢复后会同步过去。」
    - 确认内容包含：任务名称、截止日期/清单位置、优先级。
 
 **是否回复用户**：必须回复。
@@ -851,6 +860,19 @@ Phase 4 分类完成后进入。
 - ✅ {任务一句话确认}
 - 📅 {截止日期，如"今天"、"明天"、"本周六"、"无截止日期（收集箱）"}
 - 🔔 优先级：{高/中/低}
+
+{CURRENT_TIME_LABEL 的默认消息，如果相关}
+```
+
+**降级回复模板（滴答不可用时）**：
+
+```text
+滴答清单暂时不可用，已帮你记在本地。
+
+- ✅ {任务一句话确认}
+- 📅 {截止日期，如"今天"、"明天"、"本周六"、"无截止日期（收集箱）"}
+- 🔔 优先级：{高/中/低}
+- ⚠️ 连接恢复后会自动同步到滴答清单，不用担心丢失。
 
 {CURRENT_TIME_LABEL 的默认消息，如果相关}
 ```
@@ -1147,10 +1169,10 @@ grep -c "无回复\|发送失败\|节假日\|边界情况" engine/session-flow.m
 ### 分类体系覆盖检查
 
 ```bash
-grep -c "status_update\|emotional_signal\|modification_request\|deep_question\|create_intent\|rest_day_declaration" engine/session-flow.md
+grep -c "status_update\|emotional_signal\|modification_request\|deep_question\|create_intent\|rest_day_declaration\|task_commitment" engine/session-flow.md
 ```
 
-预期：至少匹配 6（六种分类各自出现）。
+预期：至少匹配 7（七种分类各自出现）。
 
 ## References
 
