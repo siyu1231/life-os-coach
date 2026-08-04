@@ -3,7 +3,7 @@ skill: review
 triggers:
   - type: cron
     name: evening-review
-    schedule: "每个工作日 22:30，周末和节假日 21:00"
+    schedule: "每日 23:00"
   - type: user_request
     name: user-initiated-review
     signal: "用户说"这周又废了"或类似表达复盘需求的语句"
@@ -18,9 +18,7 @@ triggers:
 
 ## 1. 晚间复盘信号（evening-review）
 
-**触发时机**：
-- 工作日：22:30 定时发送。
-- 周末和节假日：21:00 定时发送（提早给用户留足晚间时间）。
+**触发时机**：每日 23:00 定时发送（三种模式的消息模板不同，见 `engine/cron-system.md` 的晚间节点行为章节）。
 
 **目的**：帮助用户在一天结束时做结构化反思，从经历中提取学习，而不是沉迷于自责或流水账。
 
