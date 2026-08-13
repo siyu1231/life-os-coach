@@ -109,7 +109,7 @@ LifeOS 的底层世界观：**每个任务都是一次从 Current State（当前
 
 | 触发场景 | 读取位置 |
 |---------|---------|
-| Cron 触达（工作模式） | `profile/user.md`、`memory/daily/{today}.md`、`memory/daily/{yesterday}.md`、`planning/commitments.md`、`planning/daily-plan.md`、外部日历 API、外部待办 API |
+| Cron 触达（工作模式） | `profile/user.md`、`memory/daily/{today}.md`、`memory/daily/{yesterday}.md`、`planning/commitments.md`、`planning/carryover.md`（未完成项台账）、`planning/daily-plan.md`、外部日历 API、外部待办 API |
 | Cron 触达（休息日默认模式） | `profile/user.md`、`memory/daily/{yesterday}.md`、`planning/commitments.md`（筛选 rest_day 声明 + 今日到期/每日 step + 未来 7 天里程碑）、不读取 daily-plan.md（休息日不写强日计划） |
 | Cron 触达（纯休息模式） | `profile/user.md`、`memory/daily/{yesterday}.md`、`planning/commitments.md`（仅筛选 rest_day 声明和日程事件类承诺）、不读取 daily-plan.md |
 | 用户主动回复 | `memory/daily/{today}.md`、上一次会话的 LEARN 记录、`memory/long-term.md`（如需跨日上下文） |
@@ -166,6 +166,7 @@ LifeOS 的底层世界观：**每个任务都是一次从 Current State（当前
 | `context_shift` | 外部环境变化导致原计划不再适用 | 突发会议、紧急事务、身体不适 |
 | `no_plan` | 该时段有计划但用户未制定 | 周计划为空，日计划未填写 |
 | `commitment_overdue` | 承诺或长期目标 step 已过期或即将到期 | commitments.md 中目标日期在今天或之前的 pending 项 |
+| `carryover_stuck` | 未完成项连续顺延 ≥3 次且用户未表态，已降权但任务仍挂起 | carryover.md 中处置状态为「滞留」的条目；顺延 ≥2 次的「待处置」条目 |
 | `rest_day_override` | 用户声明了工作日为纯休息（请年假等），原工作日计划需调整 | 当天有 rest_day 声明且当日 mode 为 pure_rest |
 | `rest_day_step_available` | 休息日默认模式下有今日到期或「每日」step 可推进 | commitments.md 中目标日期 == today 或 == "每日" 的 step |
 | `evening_category_gap` | 近 7 天晚间某类别连续缺失，覆盖失衡 | 晚间四类覆盖统计显示某类连续 2 天及以上未出现 |
@@ -214,6 +215,7 @@ LifeOS 的底层世界观：**每个任务都是一次从 Current State（当前
 | `context_shift` | `replan` | 根据新上下文重新安排 |
 | `no_plan` | `planning_assist` | 启动 planning skill 帮助用户制定计划 |
 | `commitment_overdue` | `commitment_followup` | 检查 commitments.md 中已过期或即将到期的承诺，提醒用户确认（延期/取消/完成） |
+| `carryover_stuck` | `carryover_disposition` | 顺延 ≥2 次 → 17:40 聚焦处置邮件（继续延/取消/拆小/降级）；≥3 次未表态 → 标记滞留、09:30 降权进候补池、挂入周日 23:00 滞留清单批量处置；已滞留项不重复每日询问 |
 | `rest_day_override` | `plan_adjustment` | 工作日被 rest_day 覆盖，将该日的原计划 task 和 commitment 关联起来——询问用户是延期还是取消 |
 | `rest_day_step_available` | `gentle_nudge` | 休息日默认模式，轻量提醒有可推进的 step——不追进度，提供跳过选项 |
 

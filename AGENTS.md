@@ -185,6 +185,7 @@
 | 制定计划、安排周/日/月/项目、排序任务 | `planning` | `coach/skills/planning/SKILL.md` |
 | 表达未来意图（「我打算下个月…」「周末想…」），创建新计划/承诺追踪 | `planning` + `planning/commitments.md` | `coach/skills/planning/SKILL.md` + `engine/session-flow.md` Phase 4 `create_intent` 分类和 Phase 5 Action E |
 | 修改/取消已有承诺（延期、改日期、放弃） | `planning/commitments.md` | `engine/session-flow.md` Phase 5 Action C（modification_request）|
+| 未完成项处置、顺延计数、滞留清单（日任务「计划了没完成」的处置） | `planning/carryover.md` | `engine/cron-system.md`「未完成项处置流程」+ `system/algorithm.md` GAP `carryover_stuck`；17:40 写台账、09:30 读台账定主线、周日 23:00 滞留清单 |
 | 周复盘、项目复盘、行动后反思、经验提炼 | `review` | `coach/skills/review/SKILL.md` |
 | 建立、调整、恢复或替换习惯 | `habit-design` | `coach/skills/habit-design/SKILL.md` |
 | 低精力、耗竭风险、恢复、睡眠节律、容量感知计划 | `energy-management` | `coach/skills/energy-management/SKILL.md` |

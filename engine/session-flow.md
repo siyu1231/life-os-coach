@@ -519,6 +519,7 @@ Phase 3 收到有效用户回复（非特殊指令）后进入。
 - 如果用户说「得给车做保养了」→ task_commitment（具体动作，无明确日期但意图清晰）
 - 判定标准：目标是否需要拆解为多个子任务或长期准备？是 → create_intent；否且可归为单一动作 → task_commitment
 - 判定标准：用户语气像是在滴答清单里记一笔？是 → task_commitment；像是在表达一个目标/计划？是 → create_intent
+- **部署实测补充（2026-08）**：**进行中任务**（「在做/正在做/接下来做/最后一个时间块在做 X」）也归 task_commitment，不是状态更新；「新增任务：X」「完成了一个新增任务 X」是强触发器（即使含「完成」字样也优先按新增任务处理）；状态更新仅限非任务类陈述（「电影看完了」「cron 异常已解决」），提到具体可执行任务（动宾结构）一律归 task_commitment；一句话含多个动宾结构时，每个动作分别建任务（见 dida-mcp.md「部署实测修正」第 2 条）
 
 区分 create_intent vs rest_day_declaration 的关键：
 - 如果用户说「周末要去看电影」→ create_intent（计划去做某件具体的事）
@@ -677,6 +678,7 @@ Phase 4 分类完成后进入。
 | Cron 配置修改（如时间调整） | 更新 `profile/user.md` 的 `## Cron配置` 章节中的对应参数 |
 | 消息偏好修改 | 更新 `profile/user.md` 的沟通偏好部分 |
 | 未来承诺修改（延期/取消/改日期） | 更新 `planning/commitments.md` 中对应条目的状态或日期字段 |
+| 未完成项处置（顺延/取消/拆小/降级，针对日任务） | 更新 `planning/carryover.md` 中对应条目的处置状态与顺延计数，并同步滴答（顺延 → update_task dueDate；取消 → delete_task；拆小 → 按回复拆分新任务；降级 → update priority） |
 | 其他设置修改 | 更新对应配置文件 |
 
 2. 将修改记录写入 `memory/daily/{today}.md`。
@@ -882,6 +884,10 @@ Phase 4 分类完成后进入。
 
 {CURRENT_TIME_LABEL 的默认消息，如果相关}
 ```
+
+**Action G 补充：完成报告处理（部署实测 2026-08）**
+
+用户回复「已经完成了 X」「X 已完成」时：先 `search_task`/`get_task_by_id` 找滴答对应任务——找到 → `complete_task(project_id, task_id)` 勾掉（验证返回 `status=2` + `completedTime`）；**搜不到对应任务（如「完成了一个新增任务 X」）→ 不得静默跳过**——说明 X 从未入滴答，先按 task_commitment 补建（幂等查重），再按完成报告勾掉。勾选结果与 task_id 记录到当日 daily。同时注意：用户最新回复可推翻此前槽位记录的完成状态（详见 cron-system.md 回顾规则第 6 条）。
 
 ### Action 执行后的判断
 
