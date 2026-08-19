@@ -3,6 +3,9 @@ _reference/
 # 用户数据目录
 life-coach-data/
 
+# 邮件/收件箱缓存
+inbox_list.json
+
 # IDE
 .idea/
 .vscode/
